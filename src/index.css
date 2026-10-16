@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+/* Haven Hostel Management System — Classic, Elegant & Premium Design System
+   Exact Specified Color Palette:
+   - Primary blue:    #087CC9
+   - Deep blue:       #0866A8
+   - Page background: #F3FAFC
+   - Card surface:    #FFFFFF
+   - Lavender accent: #EDE5F7
+   - Pink accent:     #F3E1F0
+   - Success green:   #16865A
+   - Alert red:       #B43B3B
+   - Main text:       #17191D
+   - Secondary text:  #696B70
+   - Border:          #E8EDF0
+   - Premium gold:    #F2C316
+*/
+@theme {
+  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Explicit Palette Tokens */
+  --color-primary-blue: #087CC9;
+  --color-deep-blue: #0866A8;
+  --color-page: #F3FAFC;
+  --color-card: #FFFFFF;
+  --color-lavender: #EDE5F7;
+  --color-pink: #F3E1F0;
+  --color-success: #16865A;
+  --color-alert: #B43B3B;
+  --color-main-text: #17191D;
+  --color-secondary-text: #696B70;
+  --color-border: #E8EDF0;
+  --color-gold: #F2C316;
+
+  /* Preserved Semantic Tokens mapped directly to the Palette */
+  --color-paper: #F3FAFC;
+  --color-cream: #FFFFFF;
+  --color-sand-50: #F3FAFC;
+  --color-sand-100: #EBF4F8;
+  --color-sand-200: #E8EDF0;
+  --color-sand-300: #DCE5EB;
+
+  --color-ink-950: #0E1013;
+  --color-ink-900: #17191D;
+  --color-ink-700: #383B40;
+  --color-ink-600: #52555B;
+  --color-ink-500: #696B70;
+  --color-ink-400: #93969C;
+
+  --color-pine-950: #042D4B;
+  --color-pine-900: #0866A8;
+  --color-pine-800: #0874BD;
+  --color-pine-700: #087CC9;
+  --color-pine-600: #0A8CE2;
+  --color-pine-500: #2CA3EE;
+  --color-pine-300: #93CEF5;
+  --color-pine-200: #C2E3FA;
+  --color-pine-100: #E3F2FC;
+  --color-pine-50: #F3FAFC;
+
+  --color-mint-400: #16865A;
+  --color-mint-300: #1BA06B;
+  --color-mint-200: #C2EAD9;
+  --color-mint-100: #E2F6ED;
+  --color-mint-50: #F0FAF5;
+
+  --color-clay-700: #7E296A;
+  --color-clay-600: #A23A89;
+  --color-clay-500: #BD53A4;
+  --color-clay-100: #F3E1F0;
+  --color-clay-50: #FAF2F9;
+
+  --color-brass-700: #8C6D04;
+  --color-brass-600: #C2990B;
+  --color-brass-100: #FDF1BF;
+  --color-brass-50: #FEFAEB;
+
+  --color-danger-700: #962E2E;
+  --color-danger-600: #B43B3B;
+  --color-danger-300: #ECA3A3;
+  --color-danger-200: #F6CCCC;
+  --color-danger-100: #FDE8E8;
+  --color-danger-50: #FEF4F4;
+
+  --shadow-card: 0 1px 3px 0 rgb(23 25 29 / 0.03), 0 3px 12px -2px rgb(8 102 168 / 0.05);
+  --shadow-card-hover: 0 4px 6px -1px rgb(8 102 168 / 0.05), 0 12px 24px -4px rgb(8 102 168 / 0.1);
+  --shadow-pop: 0 20px 40px -15px rgb(8 102 168 / 0.16), 0 8px 16px -8px rgb(8 102 168 / 0.08);
+
+  --animate-toast-in: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-drawer-in: drawer-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-rise-in: rise-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes drawer-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@layer base {
+  * { min-width: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: #F3FAFC;
+    color: #17191D;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body::before {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    content: "";
+    background:
+      radial-gradient(circle at 88% 2%, rgb(8 124 201 / 0.035), transparent 32rem),
+      radial-gradient(circle at 12% 95%, rgb(237 229 247 / 0.45), transparent 30rem),
+      #F3FAFC;
+    pointer-events: none;
+  }
+
+  ::selection {
+    background: #CBE6FA;
+    color: #0866A8;
+  }
+
+  :focus-visible {
+    outline: 2px solid #087CC9;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .app-shell {
+    position: relative;
+    isolation: isolate;
+    overflow-x: clip;
+    background-color: #F3FAFC;
+  }
+
+  .sidebar-surface {
+    background: #FFFFFF;
+    border-right: 1px solid #E8EDF0;
+    box-shadow: 2px 0 16px -8px rgb(8 102 168 / 0.05);
+  }
+
+  .top-bar {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #E8EDF0;
+    box-shadow: 0 2px 12px -6px rgb(8 102 168 / 0.04);
+  }
+
+  .role-switcher {
+    background: #F3FAFC;
+    border: 1px solid #E8EDF0;
+  }
+
+  .page-header {
+    position: relative;
+    animation: rise-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .page-header h1 {
+    font-family: var(--font-display);
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+
+  .page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+  }
+
+  .page-eyebrow::before {
+    width: 1rem;
+    height: 2px;
+    border-radius: 9999px;
+    content: "";
+    background: #087CC9;
+  }
+
+  .haven-card {
+    position: relative;
+    border-radius: 1rem;
+    border: 1px solid #E8EDF0;
+    background: #FFFFFF;
+    box-shadow: var(--shadow-card);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .haven-card.is-hoverable:hover {
+    border-color: rgb(8 124 201 / 0.35);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .stat-card {
+    min-height: 8rem;
+  }
+
+  .data-surface {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid #E8EDF0;
+    background: #FFFFFF;
+  }
+
+  .data-surface table thead {
+    background: #F3FAFC;
+    border-bottom: 1px solid #E8EDF0;
+  }
+
+  .data-surface table tbody tr {
+    transition: background-color 150ms ease;
+  }
+
+  .data-surface table tbody tr:hover {
+    background: #F7FBFE;
+  }
+
+  .soft-control {
+    background-color: #FFFFFF;
+    border: 1px solid #E8EDF0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
