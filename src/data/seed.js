@@ -359,6 +359,55 @@ function buildActivity() {
   ];
 }
 
+export function buildAccounts(students = []) {
+  return [
+    {
+      id: "acc-1",
+      username: "admin",
+      password: "Admin@123",
+      name: "Chief Warden",
+      role: "admin",
+      studentId: null,
+      status: "active",
+      createdAt: daysAgo(30).toISOString(),
+      lastLogin: hoursAgo(2).toISOString(),
+    },
+    {
+      id: "acc-2",
+      username: "STU2026001",
+      password: "Student@123",
+      name: "Aarav Sharma",
+      role: "student",
+      studentId: "aarav",
+      status: "active",
+      createdAt: daysAgo(30).toISOString(),
+      lastLogin: hoursAgo(5).toISOString(),
+    },
+    {
+      id: "acc-3",
+      username: "STU2026002",
+      password: "Student@123",
+      name: "Priya Nair",
+      role: "student",
+      studentId: "priya",
+      status: "active",
+      createdAt: daysAgo(20).toISOString(),
+      lastLogin: daysAgo(1).toISOString(),
+    },
+    {
+      id: "acc-4",
+      username: "warden2",
+      password: "Warden@123",
+      name: "Assistant Warden",
+      role: "admin",
+      studentId: null,
+      status: "active",
+      createdAt: daysAgo(15).toISOString(),
+      lastLogin: daysAgo(2).toISOString(),
+    },
+  ];
+}
+
 /**
  * Fresh demo state. Called once per page load for the initial store state
  * and again on demo reset.
@@ -373,6 +422,7 @@ export function buildSeedState() {
     messMenu: buildMessMenu(),
     announcements: buildAnnouncements(),
     activity: buildActivity(),
+    accounts: buildAccounts(students),
   };
 }
 
@@ -384,3 +434,19 @@ export const COMPLAINTS = _seed.complaints;
 export const MESS_MENU = _seed.messMenu;
 export const ANNOUNCEMENTS = _seed.announcements;
 export const ACTIVITY = _seed.activity;
+export const ACCOUNTS = _seed.accounts;
+export const DEMO_ACCOUNTS = {
+  student: {
+    username: "STU2026001",
+    password: "Student@123",
+    name: "Aarav Sharma",
+    role: "student",
+  },
+  admin: {
+    username: "admin",
+    password: "Admin@123",
+    name: "Chief Warden",
+    role: "admin",
+  },
+};
+

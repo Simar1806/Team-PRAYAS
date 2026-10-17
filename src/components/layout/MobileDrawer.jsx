@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { NavLink } from "react-router-dom";
-import { X } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { getNavItems } from "./nav.js";
 import { useView } from "../../state/demo.jsx";
@@ -9,7 +9,7 @@ import { Logo } from "./Logo.jsx";
 
 export function MobileDrawer({ open, onClose }) {
   const closeRef = useRef(null);
-  const { role } = useView();
+  const { role, user, logout } = useView();
 
   useEffect(() => {
     if (!open) return;
@@ -67,10 +67,30 @@ export function MobileDrawer({ open, onClose }) {
             ))}
           </ul>
         </nav>
-        <div className="p-4 border-t border-[#E8EDF0]">
-          <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3 text-center">
-            <p className="text-xs font-semibold text-[#17191D]">Haven Residence</p>
-            <p className="mt-0.5 text-[11px] text-[#696B70]">Academic Year 2026-27</p>
+        <div className="p-4 border-t border-[#E8EDF0] space-y-2.5">
+          <div className="flex items-center justify-between rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3">
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-[#17191D]">
+                {user?.name || (role === "admin" ? "Chief Warden" : "Student Resident")}
+              </p>
+              <p className="truncate text-[10px] text-[#087CC9] font-medium uppercase">
+                {role === "admin" ? "Administrator" : `@${user?.username || "student"}`}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                logout();
+              }}
+              className="inline-flex items-center gap-1 rounded-lg border border-[#E8EDF0] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#B43B3B] hover:bg-[#FDF2F2] transition-colors"
+            >
+              <LogOut className="size-3.5" />
+              Sign Out
+            </button>
+          </div>
+          <div className="text-center">
+            <p className="text-[10px] text-[#696B70]">Haven Residence · Academic Year 2026-27</p>
           </div>
         </div>
       </div>

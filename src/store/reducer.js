@@ -27,6 +27,7 @@ function nextNumericId(items, prefix, key = "id") {
 
 const nextComplaintId = (complaints) => nextNumericId(complaints, "CMP-").next;
 const nextAnnouncementId = (announcements) => nextNumericId(announcements, "ann-").next;
+const nextAccountId = (accounts) => nextNumericId(accounts, "acc-").next;
 const nextStudentId = (students) => {
   const { max } = nextNumericId(
     students.map((s) => ({ id: s.id.replace("st-", "") })),
@@ -256,6 +257,85 @@ export function havenReducer(state, action) {
       return withActivity(next, "Warden", `Deleted an announcement (${action.id}).`, "announcement");
     }
 
+    case "ADD_ACCOUNT": {
+      const d = action.account;
+      if (!d.username?.trim() || !d.password?.trim() || !d.name?.trim()) return state;
+      const cleanUsername = d.username.trim();
+      const accounts = state.accounts || [];
+      if (accounts.some((a) => a.username.toLowerCase() === cleanUsername.toLowerCase())) {
+        return state;
+      }
+      const account = {
+        id: nextAccountId(accounts),
+        username: cleanUsername,
+        password: d.password,
+        name: d.name.trim(),
+        role: d.role === "admin" ? "admin" : "student",
+        studentId: d.studentId || null,
+        status: "active",
+        createdAt: new Date().toISOString(),
+        lastLogin: null,
+      };
+      const next = { ...state, accounts: [account, ...accounts] };
+      return withActivity(
+        next,
+        "Admin",
+        `Created ${account.role} account for ${account.name} (${account.username}).`,
+        "maintenance",
+      );
+    }
+
+    case "UPDATE_ACCOUNT_STATUS": {
+      const { accountId, status } = action;
+      const accounts = state.accounts || [];
+      const target = accounts.find((a) => a.id === accountId);
+      if (!target) return state;
+      const next = {
+        ...state,
+        accounts: accounts.map((a) => (a.id === accountId ? { ...a, status } : a)),
+      };
+      return withActivity(
+        next,
+        "Admin",
+        `${status === "active" ? "Activated" : "Deactivated"} account for ${target.name} (${target.username}).`,
+        "maintenance",
+      );
+    }
+
+    case "RESET_ACCOUNT_PASSWORD": {
+      const { accountId, newPassword } = action;
+      const accounts = state.accounts || [];
+      const target = accounts.find((a) => a.id === accountId);
+      if (!target || !newPassword) return state;
+      const next = {
+        ...state,
+        accounts: accounts.map((a) => (a.id === accountId ? { ...a, password: newPassword } : a)),
+      };
+      return withActivity(
+        next,
+        "Admin",
+        `Reset password for account ${target.username}.`,
+        "maintenance",
+      );
+    }
+
+    case "REMOVE_ACCOUNT": {
+      const { accountId } = action;
+      const accounts = state.accounts || [];
+      const target = accounts.find((a) => a.id === accountId);
+      if (!target || target.username === "admin") return state; // Never delete default admin
+      const next = {
+        ...state,
+        accounts: accounts.filter((a) => a.id !== accountId),
+      };
+      return withActivity(
+        next,
+        "Admin",
+        `Removed account ${target.username}.`,
+        "maintenance",
+      );
+    }
+
     case "RESET_DEMO":
       return createInitialState();
 
@@ -278,5 +358,9 @@ export const actions = {
   updateMeal: (day, mealKey, text) => ({ type: "UPDATE_MEAL", day, mealKey, text }),
   addAnnouncement: (announcement) => ({ type: "ADD_ANNOUNCEMENT", announcement }),
   deleteAnnouncement: (id) => ({ type: "DELETE_ANNOUNCEMENT", id }),
+  addAccount: (account) => ({ type: "ADD_ACCOUNT", account }),
+  updateAccountStatus: (accountId, status) => ({ type: "UPDATE_ACCOUNT_STATUS", accountId, status }),
+  resetAccountPassword: (accountId, newPassword) => ({ type: "RESET_ACCOUNT_PASSWORD", accountId, newPassword }),
+  removeAccount: (accountId) => ({ type: "REMOVE_ACCOUNT", accountId }),
   resetDemo: () => ({ type: "RESET_DEMO" }),
 };

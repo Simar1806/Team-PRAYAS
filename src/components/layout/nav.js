@@ -1,5 +1,6 @@
 import {
   BedDouble,
+  KeyRound,
   LayoutDashboard,
   Megaphone,
   Users,
@@ -69,6 +70,13 @@ export const ALL_NAV_ITEMS = [
     icon: Megaphone,
     blurb: "Hostel notices and priority announcements.",
     roles: ["student", "admin"],
+  },
+  {
+    to: "/accounts",
+    label: "Accounts",
+    icon: KeyRound,
+    blurb: "Manage hostel logins, credentials, and access permissions.",
+    roles: ["admin"],
   },
 ];
 

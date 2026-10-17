@@ -9,21 +9,24 @@
  * `globalThis.localStorage` is read lazily so Node tests can inject a mock.
  */
 import { STORE_KEY, STORE_VERSION, createInitialState } from "./reducer.js";
+import { buildAccounts } from "../data/seed.js";
 
 const toDate = (v) => (v instanceof Date ? v : new Date(v));
 
 /** Revive ISO date strings back into Dates after a JSON round-trip. */
 export function reviveDates(state) {
+  const accounts = Array.isArray(state.accounts) ? state.accounts : buildAccounts(state.students || []);
   return {
     ...state,
-    complaints: state.complaints.map((c) => ({
+    accounts,
+    complaints: (state.complaints || []).map((c) => ({
       ...c,
       createdAt: toDate(c.createdAt),
       timeline: (c.timeline || []).map((t) => ({ ...t, at: toDate(t.at) })),
     })),
-    announcements: state.announcements.map((a) => ({ ...a, publishedAt: toDate(a.publishedAt) })),
-    activity: state.activity.map((a) => ({ ...a, at: toDate(a.at) })),
-    students: state.students.map((s) => ({
+    announcements: (state.announcements || []).map((a) => ({ ...a, publishedAt: toDate(a.publishedAt) })),
+    activity: (state.activity || []).map((a) => ({ ...a, at: toDate(a.at) })),
+    students: (state.students || []).map((s) => ({
       ...s,
       roomHistory: (s.roomHistory || []).map((h) => ({
         ...h,

@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
-import { RotateCcw } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { LogOut, RotateCcw, ShieldCheck } from "lucide-react";
 import { cn } from "../../lib/cn";
 import { useView } from "../../state/demo.jsx";
 import { useHaven } from "../../store/havenStore.jsx";
 import { actions } from "../../store/reducer.js";
-import { Button, Dialog, useToast } from "../ui/index.js";
+import { Avatar, Button, Dialog, useToast } from "../ui/index.js";
 import { getNavItems } from "./nav.js";
 import { Logo } from "./Logo.jsx";
 
@@ -47,9 +47,10 @@ function SidebarLink({ to, label, icon: Icon, end = false }) {
 }
 
 export function Sidebar() {
-  const { role } = useView();
+  const { role, user, logout } = useView();
   const { dispatch } = useHaven();
   const pushToast = useToast();
+  const navigate = useNavigate();
   const [confirmReset, setConfirmReset] = useState(false);
   const items = getNavItems(role);
 
@@ -58,6 +59,13 @@ export function Sidebar() {
     setConfirmReset(false);
     pushToast("success", "Records restored", "Hostel records have been reset to default state.");
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
+  const displayName = user?.name || (role === "admin" ? "Chief Warden" : "Student Resident");
 
   return (
     <aside className="sidebar-surface fixed inset-y-0 left-0 z-40 hidden w-72 flex-col lg:flex" aria-label="Sidebar">
@@ -78,27 +86,45 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-[#E8EDF0]">
-        <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3.5">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-2 text-xs font-semibold text-[#17191D]">
-              <span className="size-2 rounded-full bg-[#16865A] ring-2 ring-[#E2F6ED]" />
-              Haven Residence
-            </span>
-            <span className="text-[10px] font-semibold text-[#087CC9] bg-[#E6F3FC] px-1.5 py-0.5 rounded-md uppercase">
-              {role}
-            </span>
+      <div className="p-4 border-t border-[#E8EDF0] space-y-3">
+        {/* User profile card */}
+        <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {role === "admin" ? (
+              <span className="inline-flex size-8 items-center justify-center rounded-lg bg-[#E6F3FC] text-[#0866A8] shrink-0">
+                <ShieldCheck className="size-4" />
+              </span>
+            ) : (
+              <Avatar name={displayName} size="sm" />
+            )}
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-[#17191D]">{displayName}</p>
+              <p className="truncate text-[10px] text-[#696B70]">
+                {role === "admin" ? "Warden Office" : `@${user?.username || "resident"}`}
+              </p>
+            </div>
           </div>
-          <p className="mt-1 text-[11px] leading-relaxed text-[#696B70]">
-            All hostel operations synced
-          </p>
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Sign Out"
+            aria-label="Sign Out"
+            className="p-1.5 rounded-lg text-[#696B70] hover:text-[#B43B3B] hover:bg-[#FDF2F2] transition-colors"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </div>
+
+        {/* Demo reset helper */}
+        <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setConfirmReset(true)}
-            className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#696B70] transition-colors hover:text-[#087CC9]"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#696B70] transition-colors hover:text-[#087CC9]"
           >
             <RotateCcw className="size-3" />
-            Restore original records
+            Restore default data
           </button>
+          <span className="size-1.5 rounded-full bg-[#16865A]" title="System connected" />
         </div>
       </div>
 

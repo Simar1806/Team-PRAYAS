@@ -1,31 +1,24 @@
-import { GraduationCap, Menu, ShieldCheck } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { cn } from "../../lib/cn.js";
+import { LogOut, Menu, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useView } from "../../state/demo.jsx";
 import { useHaven } from "../../store/havenStore.jsx";
 import { getStudent } from "../../data/selectors.js";
 import { Avatar } from "../ui/Avatar.jsx";
 import { Logo } from "./Logo.jsx";
-import { getNavItems } from "./nav.js";
-
-const VIEWS = [
-  { value: "student", label: "Student", icon: GraduationCap },
-  { value: "admin", label: "Admin", icon: ShieldCheck },
-];
 
 export function TopBar({ onOpenMenu }) {
-  const { role, setRole, studentId } = useView();
+  const { role, user, logout, studentId } = useView();
   const { state } = useHaven();
-  const location = useLocation();
   const navigate = useNavigate();
 
   const student = getStudent(state.students, studentId);
 
-  const switchRole = (next) => {
-    if (next === role) return;
-    setRole(next);
-    if (!getNavItems(next).some((item) => item.to === location.pathname)) navigate("/");
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
   };
+
+  const displayName = user?.name || (role === "admin" ? "Chief Warden" : student?.name || "Resident");
 
   return (
     <header className="top-bar sticky top-0 z-30 border-b border-[#E8EDF0] bg-white/90 backdrop-blur-md">
@@ -46,69 +39,57 @@ export function TopBar({ onOpenMenu }) {
           <div className="hidden min-w-0 lg:block">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold tracking-[0.16em] text-[#696B70] uppercase">
-                {role === "admin" ? "Administrative View" : "Student View"}
+                {role === "admin" ? "Administrative View" : "Resident Portal"}
               </span>
               <span className="size-1 rounded-full bg-[#E8EDF0]" />
               <span className="text-xs font-medium text-[#696B70]">
                 {role === "admin"
                   ? "Warden Console · Full Access"
-                  : `Block ${student.block} · Room ${student.roomId}`}
+                  : `Block ${student?.block || "A"} · Room ${student?.roomId || "101"}`}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Right: Role Switcher & User Identity */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div
-            className="role-switcher inline-flex rounded-xl bg-[#F3FAFC] p-1 border border-[#E8EDF0] shadow-xs"
-            role="group"
-            aria-label="Switch portal view"
-          >
-            {VIEWS.map(({ value, label, icon: Icon }) => {
-              const active = role === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => switchRole(value)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer sm:px-3.5",
-                    active
-                      ? "bg-[#087CC9] text-white shadow-xs"
-                      : "text-[#696B70] hover:text-[#0866A8] hover:bg-white/60",
-                  )}
-                >
-                  <Icon className="size-3.5" aria-hidden="true" />
-                  <span>{label}</span>
-                </button>
-              );
-            })}
+        {/* Right: Authenticated User Profile & Logout */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* User profile indicator */}
+          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-[#E8EDF0] bg-[#F3FAFC]">
+            {role === "admin" ? (
+              <span className="inline-flex size-7 sm:size-8 items-center justify-center rounded-lg bg-[#E6F3FC] text-[#0866A8] font-bold text-xs shrink-0">
+                <ShieldCheck className="size-4" />
+              </span>
+            ) : (
+              <Avatar name={displayName} size="sm" />
+            )}
+            <div className="min-w-0 text-left">
+              <p className="truncate text-xs font-semibold text-[#17191D] max-w-[120px] sm:max-w-[160px]">
+                {displayName}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="inline-block text-[10px] font-semibold text-[#087CC9] uppercase tracking-wide">
+                  {role === "admin" ? "Administrator" : "Resident"}
+                </span>
+                {user?.username && (
+                  <span className="hidden sm:inline text-[10px] text-[#696B70] font-mono">
+                    (@{user.username})
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* User profile indicator */}
-          <div className="hidden sm:flex items-center gap-2.5 pl-2 border-l border-[#E8EDF0]">
-            {role === "admin" ? (
-              <div className="flex items-center gap-2.5">
-                <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#E6F3FC] text-[#0866A8] font-bold text-xs">
-                  <ShieldCheck className="size-4" />
-                </span>
-                <div className="min-w-0 text-left">
-                  <p className="truncate text-xs font-semibold text-[#17191D]">Chief Warden</p>
-                  <p className="truncate text-[10px] text-[#696B70]">Hostel Admin</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2.5">
-                <Avatar name={student.name} size="sm" />
-                <div className="min-w-0 text-left">
-                  <p className="truncate text-xs font-semibold text-[#17191D]">{student.name}</p>
-                  <p className="truncate text-[10px] text-[#696B70]">Room {student.roomId}</p>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Logout Button */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            title="Sign out of account"
+            aria-label="Sign out"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E8EDF0] bg-white px-3 py-2 text-xs font-semibold text-[#696B70] hover:text-[#B43B3B] hover:border-[#B43B3B]/30 hover:bg-[#FDF2F2] transition-all cursor-pointer shadow-2xs"
+          >
+            <LogOut className="size-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
         </div>
       </div>
     </header>
