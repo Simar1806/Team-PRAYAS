@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+import { Eye, IdCard, Pencil, Search, Trash2, Users } from "lucide-react";
 import { Page, PageHeader } from "../../components/layout/index.js";
 import {
   Avatar,
@@ -18,12 +18,13 @@ import {
 } from "../../components/ui/index.js";
 import { useHaven } from "../../store/havenStore.jsx";
 import { actions } from "../../store/reducer.js";
-import { getUnallocatedStudents, searchStudents } from "../../data/selectors.js";
+import { academicLine, getUnallocatedStudents, searchStudents } from "../../data/selectors.js";
+import { useView } from "../../state/demo.jsx";
 import { StudentForm } from "./StudentForm.jsx";
 
 const SORTS = {
   name: { label: "Name A–Z", fn: (a, b) => a.name.localeCompare(b.name) },
-  year: { label: "Year, then name", fn: (a, b) => a.year - b.year || a.name.localeCompare(b.name) },
+  year: { label: "Year, then name", fn: (a, b) => (a.year ?? 9) - (b.year ?? 9) || a.name.localeCompare(b.name) },
   room: {
     label: "Room & Bed",
     fn: (a, b) =>
@@ -36,22 +37,23 @@ const SORTS = {
 function RoomCell({ student }) {
   if (!student.roomId) return <Badge tone="warn">Unallocated</Badge>;
   return (
-    <span className="inline-flex items-center gap-1.5 font-semibold text-[#17191D]">
-      <span className="text-[#0866A8]">{student.roomId}</span>
-      <span className="text-xs font-normal text-[#696B70]">· Bed {student.bed}</span>
+    <span className="inline-flex items-center gap-1.5 font-semibold text-[#24221F]">
+      <span className="text-[#2F4785]">{student.roomId}</span>
+      <span className="text-xs font-normal text-[#6F6A62]">· Bed {student.bed}</span>
     </span>
   );
 }
 
 export function Students() {
   const { state, dispatch } = useHaven();
+  const { canManageAccounts } = useView();
   const pushToast = useToast();
   const [query, setQuery] = useState("");
   const [block, setBlock] = useState("all");
   const [year, setYear] = useState("all");
   const [alloc, setAlloc] = useState("all");
   const [sort, setSort] = useState("name");
-  const [dialog, setDialog] = useState(null); // {mode:'add'} | {mode:'edit',student} | {mode:'delete',student}
+  const [dialog, setDialog] = useState(null); // {mode:'edit',student} | {mode:'delete',student}
 
   const list = useMemo(() => {
     let out = searchStudents(state.students, query);
@@ -67,12 +69,6 @@ export function Students() {
 
   const closeDialog = () => setDialog(null);
 
-  const handleAdd = (data) => {
-    dispatch(actions.addStudent(data));
-    closeDialog();
-    pushToast("success", "Student registered", `${data.name} was added to the directory. Assign a bed under Rooms.`);
-  };
-
   const handleEdit = (data) => {
     dispatch(actions.updateStudent(dialog.student.id, data));
     closeDialog();
@@ -82,7 +78,7 @@ export function Students() {
   const handleDelete = () => {
     dispatch(actions.removeStudent(dialog.student.id));
     closeDialog();
-    pushToast("success", "Student removed", `${dialog.student.name} is no longer in the directory.`);
+    pushToast("success", "Student removed", `${dialog.student.name} and login ID ${dialog.student.studentCode} were deleted.`);
   };
 
   const clearFilters = () => {
@@ -97,11 +93,16 @@ export function Students() {
       <PageHeader
         eyebrow="Administration"
         title="Student Directory"
-        description={`${state.students.length} residents on record. Search, filter by block/year, and manage profiles.`}
+        description={`${state.students.length} residents on record. Students join the directory only when the hostel office issues their student ID.`}
         actions={
-          <Button onClick={() => setDialog({ mode: "add" })}>
-            <Plus className="size-4" aria-hidden="true" /> Add Student
-          </Button>
+          canManageAccounts && (
+            <Link
+              to="/accounts?issue=student"
+              className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#3E5BA9] px-4 text-sm font-medium text-white transition-colors hover:bg-[#2F4785]"
+            >
+              <IdCard className="size-4" aria-hidden="true" /> Issue Student ID
+            </Link>
+          )
         }
       />
 
@@ -131,7 +132,7 @@ export function Students() {
           <div className="grid gap-3 lg:grid-cols-[1.5fr_repeat(4,1fr)]">
             <Field label="Search Directory">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#696B70]" aria-hidden="true" />
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6F6A62]" aria-hidden="true" />
                 <TextInput
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -175,12 +176,12 @@ export function Students() {
         </CardBody>
       </Card>
 
-      <div className="flex items-center justify-between mb-3 text-xs text-[#696B70] px-1">
+      <div className="flex items-center justify-between mb-3 text-xs text-[#6F6A62] px-1">
         <span>Showing <strong>{list.length}</strong> of {state.students.length} students</span>
         {(query || block !== "all" || year !== "all" || alloc !== "all") && (
           <button
             onClick={clearFilters}
-            className="font-semibold text-[#087CC9] hover:underline cursor-pointer"
+            className="font-semibold text-[#3E5BA9] hover:underline cursor-pointer"
           >
             Reset filters
           </button>
@@ -202,56 +203,60 @@ export function Students() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[#E8EDF0] bg-[#F3FAFC] text-[11px] font-bold uppercase tracking-[0.14em] text-[#696B70]">
+                  <tr className="border-b border-[#E8E2D7] bg-[#F7F4EE] text-[13px] font-medium text-[#6F6A62]">
                     <th className="px-5 py-3.5">Student</th>
-                    <th className="px-5 py-3.5">Course</th>
-                    <th className="px-5 py-3.5">Year</th>
+                    <th className="px-5 py-3.5">Student ID</th>
+                    <th className="px-5 py-3.5">Course & Year</th>
                     <th className="px-5 py-3.5">Room & Bed</th>
                     <th className="px-5 py-3.5">Contact Phone</th>
                     <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E8EDF0]/70">
+                <tbody className="divide-y divide-[#E8E2D7]/70">
                   {list.map((s) => (
-                    <tr key={s.id} className="transition-colors hover:bg-[#F8FCFE]">
+                    <tr key={s.id} className="transition-colors hover:bg-[#FAF8F3]">
                       <td className="px-5 py-3.5">
                         <Link to={`/students/${s.id}`} className="flex items-center gap-3 group">
                           <Avatar name={s.name} size="sm" />
                           <div>
-                            <span className="block font-semibold text-[#17191D] group-hover:text-[#087CC9] transition-colors">
+                            <span className="block font-semibold text-[#24221F] group-hover:text-[#3E5BA9] transition-colors">
                               {s.name}
                             </span>
-                            <span className="block text-xs text-[#696B70]">{s.id}</span>
+                            {!s.profileComplete && (
+                              <span className="mt-0.5 block text-xs font-medium text-[#87600F]">Awaiting first sign-in</span>
+                            )}
                           </div>
                         </Link>
                       </td>
-                      <td className="px-5 py-3.5 text-[#52555B]">{s.course}</td>
-                      <td className="px-5 py-3.5 text-[#52555B]">Year {s.year}</td>
+                      <td className="px-5 py-3.5 font-mono text-[13px] text-[#2F4785]">{s.studentCode}</td>
+                      <td className="px-5 py-3.5 text-[#58534B]">{academicLine(s)}</td>
                       <td className="px-5 py-3.5"><RoomCell student={s} /></td>
-                      <td className="px-5 py-3.5 text-[#696B70]">{s.phone || "—"}</td>
+                      <td className="px-5 py-3.5 text-[#6F6A62]">{s.phone || "—"}</td>
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex justify-end gap-1">
                           <Link
                             to={`/students/${s.id}`}
                             aria-label={`View ${s.name}`}
-                            className="rounded-lg p-2 text-[#696B70] transition-colors hover:bg-[#E6F3FC] hover:text-[#087CC9]"
+                            className="rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#ECEFF8] hover:text-[#3E5BA9]"
                           >
                             <Eye className="size-4" aria-hidden="true" />
                           </Link>
                           <button
                             onClick={() => setDialog({ mode: "edit", student: s })}
                             aria-label={`Edit ${s.name}`}
-                            className="rounded-lg p-2 text-[#696B70] transition-colors hover:bg-[#E6F3FC] hover:text-[#087CC9]"
+                            className="rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#ECEFF8] hover:text-[#3E5BA9]"
                           >
                             <Pencil className="size-4" aria-hidden="true" />
                           </button>
-                          <button
-                            onClick={() => setDialog({ mode: "delete", student: s })}
-                            aria-label={`Remove ${s.name}`}
-                            className="rounded-lg p-2 text-[#696B70] transition-colors hover:bg-[#FDE8E8] hover:text-[#B43B3B]"
-                          >
-                            <Trash2 className="size-4" aria-hidden="true" />
-                          </button>
+                          {canManageAccounts && (
+                            <button
+                              onClick={() => setDialog({ mode: "delete", student: s })}
+                              aria-label={`Remove ${s.name}`}
+                              className="rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#FBEAE6] hover:text-[#B5483B]"
+                            >
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -268,11 +273,11 @@ export function Students() {
                 <CardBody className="flex items-center gap-3.5 p-4">
                   <Avatar name={s.name} />
                   <div className="min-w-0 flex-1">
-                    <Link to={`/students/${s.id}`} className="block truncate font-semibold text-[#17191D] hover:underline">
+                    <Link to={`/students/${s.id}`} className="block truncate font-semibold text-[#24221F] hover:underline">
                       {s.name}
                     </Link>
-                    <p className="truncate text-xs text-[#696B70]">
-                      {s.course} · Year {s.year}
+                    <p className="truncate text-xs text-[#6F6A62]">
+                      <span className="font-mono text-[#2F4785]">{s.studentCode}</span> · {academicLine(s)}
                     </p>
                     <p className="mt-1 text-xs">
                       <RoomCell student={s} />
@@ -282,24 +287,26 @@ export function Students() {
                     <Link
                       to={`/students/${s.id}`}
                       aria-label={`View ${s.name}`}
-                      className="rounded-lg p-2 text-[#696B70] hover:bg-[#E6F3FC] hover:text-[#087CC9]"
+                      className="rounded-lg p-2 text-[#6F6A62] hover:bg-[#ECEFF8] hover:text-[#3E5BA9]"
                     >
                       <Eye className="size-4" aria-hidden="true" />
                     </Link>
                     <button
                       onClick={() => setDialog({ mode: "edit", student: s })}
                       aria-label={`Edit ${s.name}`}
-                      className="rounded-lg p-2 text-[#696B70] hover:bg-[#E6F3FC] hover:text-[#087CC9]"
+                      className="rounded-lg p-2 text-[#6F6A62] hover:bg-[#ECEFF8] hover:text-[#3E5BA9]"
                     >
                       <Pencil className="size-4" aria-hidden="true" />
                     </button>
-                    <button
-                      onClick={() => setDialog({ mode: "delete", student: s })}
-                      aria-label={`Remove ${s.name}`}
-                      className="rounded-lg p-2 text-[#696B70] hover:bg-[#FDE8E8] hover:text-[#B43B3B]"
-                    >
-                      <Trash2 className="size-4" aria-hidden="true" />
-                    </button>
+                    {canManageAccounts && (
+                      <button
+                        onClick={() => setDialog({ mode: "delete", student: s })}
+                        aria-label={`Remove ${s.name}`}
+                        className="rounded-lg p-2 text-[#6F6A62] hover:bg-[#FBEAE6] hover:text-[#B5483B]"
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      </button>
+                    )}
                   </div>
                 </CardBody>
               </Card>
@@ -308,23 +315,19 @@ export function Students() {
         </>
       )}
 
-      {/* Add / Edit Dialog */}
+      {/* Edit Dialog */}
       <Dialog
-        open={dialog?.mode === "add" || dialog?.mode === "edit"}
+        open={dialog?.mode === "edit"}
         onClose={closeDialog}
-        title={dialog?.mode === "add" ? "Register New Student" : "Edit Student Information"}
-        description={
-          dialog?.mode === "add"
-            ? "New residents register in the unallocated pool. You can allocate a bed immediately under Rooms."
-            : undefined
-        }
+        title="Edit Student Information"
+        description={dialog?.student ? `Student ID ${dialog.student.studentCode}` : undefined}
       >
-        {dialog && (
+        {dialog?.mode === "edit" && (
           <StudentForm
-            key={dialog.mode + (dialog.student?.id ?? "new")}
-            initial={dialog.mode === "edit" ? dialog.student : undefined}
-            submitLabel={dialog.mode === "add" ? "Register Student" : "Save Changes"}
-            onSubmit={dialog.mode === "add" ? handleAdd : handleEdit}
+            key={dialog.student.id}
+            initial={dialog.student}
+            submitLabel="Save Changes"
+            onSubmit={handleEdit}
             onCancel={closeDialog}
           />
         )}
@@ -334,10 +337,10 @@ export function Students() {
       <Dialog
         open={dialog?.mode === "delete"}
         onClose={closeDialog}
-        title="Remove Student Record?"
-        description={`${dialog?.student?.name ?? ""} will be removed from the hostel directory${
-          dialog?.student?.roomId ? ` and vacated from ${dialog.student.roomId}` : ""
-        }.`}
+        title="Delete student and login ID?"
+        description={`${dialog?.student?.name ?? ""} will be removed from the directory${
+          dialog?.student?.roomId ? `, vacated from ${dialog.student.roomId},` : ""
+        } and student ID ${dialog?.student?.studentCode ?? ""} will stop working.`}
         footer={
           <>
             <Button variant="ghost" onClick={closeDialog}>Cancel</Button>
@@ -345,8 +348,8 @@ export function Students() {
           </>
         }
       >
-        <p className="text-sm text-[#696B70]">
-          Their complaint timeline remains archived for hostel audits; only the active student directory profile is deleted.
+        <p className="text-sm text-[#6F6A62]">
+          This deletes their profile details and their login. Complaints they filed stay archived for hostel audits.
         </p>
       </Dialog>
     </Page>

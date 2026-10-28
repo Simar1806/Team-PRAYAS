@@ -21,6 +21,13 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
   const descId = useId();
   const panelRef = useRef(null);
   const previousFocus = useRef(null);
+  // Parents pass a new onClose function on every render (e.g. while typing in
+  // a form). Keep the latest one in a ref so the open/focus effect runs only
+  // when the dialog actually opens, instead of stealing focus on each keystroke.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
@@ -36,7 +43,7 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current?.();
         return;
       }
       if (e.key === "Tab" && panel) {
@@ -62,7 +69,7 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
       document.body.style.overflow = "";
       if (previousFocus.current && previousFocus.current.focus) previousFocus.current.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -70,7 +77,7 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="presentation">
       <button
         aria-label="Close dialog"
-        className="absolute inset-0 cursor-default bg-[#0E1013]/40 backdrop-blur-xs animate-fade-in"
+        className="absolute inset-0 cursor-default bg-[#1A1815]/40 backdrop-blur-xs animate-fade-in"
         onClick={onClose}
         tabIndex={-1}
       />
@@ -82,18 +89,18 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
         className={cn(
-          "relative flex max-h-[90dvh] w-full flex-col overflow-hidden border border-[#E8EDF0] bg-white shadow-pop outline-none",
+          "relative flex max-h-[90dvh] w-full flex-col overflow-hidden border border-[#E8E2D7] bg-white shadow-pop outline-none",
           "rounded-t-2xl sm:rounded-2xl animate-drawer-in sm:animate-fade-in",
           wide ? "sm:max-w-2xl" : "sm:max-w-lg",
         )}
       >
-        <div className="flex items-start justify-between gap-4 px-6 pt-6 sm:px-7 sm:pt-6 border-b border-[#E8EDF0]/60 pb-4">
+        <div className="flex items-start justify-between gap-4 px-6 pt-6 sm:px-7 sm:pt-6 border-b border-[#E8E2D7]/60 pb-4">
           <div className="min-w-0">
-            <h2 id={titleId} className="font-display text-xl sm:text-2xl font-bold tracking-tight text-[#17191D]">
+            <h2 id={titleId} className="font-display text-xl sm:text-2xl font-semibold tracking-tight text-[#24221F]">
               {title}
             </h2>
             {description && (
-              <p id={descId} className="mt-1 text-xs sm:text-sm text-[#696B70]">
+              <p id={descId} className="mt-1 text-xs sm:text-sm text-[#6F6A62]">
                 {description}
               </p>
             )}
@@ -101,14 +108,14 @@ export function Dialog({ open, onClose, title, description, children, footer, wi
           <button
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-lg p-1.5 text-[#696B70] transition-colors hover:bg-[#F3FAFC] hover:text-[#17191D]"
+            className="rounded-lg p-1.5 text-[#6F6A62] transition-colors hover:bg-[#F7F4EE] hover:text-[#24221F]"
           >
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
         <div className="overflow-y-auto px-6 py-5 sm:px-7 sm:py-6">{children}</div>
         {footer && (
-          <div className="flex flex-col-reverse gap-2.5 border-t border-[#E8EDF0] bg-[#F3FAFC]/50 px-6 py-4 sm:flex-row sm:justify-end sm:px-7">
+          <div className="flex flex-col-reverse gap-2.5 border-t border-[#E8E2D7] bg-[#F7F4EE]/50 px-6 py-4 sm:flex-row sm:justify-end sm:px-7">
             {footer}
           </div>
         )}

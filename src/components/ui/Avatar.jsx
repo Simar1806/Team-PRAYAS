@@ -1,12 +1,12 @@
 import { cn } from "../../lib/cn";
 
 const PALETTE = [
-  "bg-[#E6F3FC] text-[#0866A8] ring-1 ring-[#087CC9]/20",
-  "bg-[#E2F6ED] text-[#16865A] ring-1 ring-[#16865A]/20",
-  "bg-[#EDE5F7] text-[#5B3A8C] ring-1 ring-[#5B3A8C]/20",
-  "bg-[#F3E1F0] text-[#7E296A] ring-1 ring-[#7E296A]/20",
-  "bg-[#FEFAEB] text-[#8C6D04] ring-1 ring-[#F2C316]/35",
-  "bg-[#087CC9] text-white ring-1 ring-[#0866A8]/30",
+  "bg-[#ECEFF8] text-[#2F4785] ring-1 ring-[#3E5BA9]/20",
+  "bg-[#E5F2E9] text-[#2F855A] ring-1 ring-[#2F855A]/20",
+  "bg-[#EEE9F6] text-[#5B4590] ring-1 ring-[#5B4590]/20",
+  "bg-[#F8E7DE] text-[#9A4A2E] ring-1 ring-[#9A4A2E]/20",
+  "bg-[#FDF6E6] text-[#87600F] ring-1 ring-[#E2A93B]/35",
+  "bg-[#3E5BA9] text-white ring-1 ring-[#2F4785]/30",
 ];
 
 const SIZES = {

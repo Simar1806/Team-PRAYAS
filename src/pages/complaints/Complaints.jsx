@@ -91,7 +91,7 @@ function ComplaintForm({ studentId, onDone }) {
           aria-invalid={!!errors.description}
         />
       </Field>
-      <div className="flex justify-end gap-2.5 pt-2 border-t border-[#E8EDF0]">
+      <div className="flex justify-end gap-2.5 pt-2 border-t border-[#E8E2D7]">
         <Button type="button" variant="ghost" onClick={onDone}>Cancel</Button>
         <Button type="submit">Submit Complaint</Button>
       </div>
@@ -134,36 +134,36 @@ function ComplaintDetail({ complaintId, onClose, allowTriage }) {
           <Badge tone="sand">{complaint.category}</Badge>
         </div>
 
-        <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#696B70] mb-1">Issue Description</p>
-          <p className="text-sm leading-relaxed text-[#17191D]">{complaint.description}</p>
+        <div className="rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-4">
+          <p className="text-[13px] font-medium text-[#6F6A62] mb-1">Issue Description</p>
+          <p className="text-sm leading-relaxed text-[#24221F]">{complaint.description}</p>
         </div>
 
         {reporter && (
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-[#E8EDF0] bg-white">
+          <div className="flex items-center gap-3 p-3 rounded-xl border border-[#E8E2D7] bg-white">
             <Avatar name={reporter.name} size="sm" />
             <div className="min-w-0 text-xs">
-              <span className="font-semibold text-[#17191D]">{reporter.name}</span>
-              <span className="text-[#696B70]"> · Room {reporter.roomId || "Unallocated"} · {reporter.course}</span>
+              <span className="font-semibold text-[#24221F]">{reporter.name}</span>
+              <span className="text-[#6F6A62]"> · Room {reporter.roomId || "Unallocated"} · {reporter.course}</span>
             </div>
           </div>
         )}
 
         <div>
-          <h4 className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[#696B70]">
+          <h4 className="mb-3 flex items-center gap-1.5 text-[13px] font-medium text-[#6F6A62]">
             <Clock className="size-3.5" aria-hidden="true" /> Ticket Audit Timeline
           </h4>
           <ol className="relative space-y-3.5 pl-1">
             {[...complaint.timeline].reverse().map((t, i) => (
               <li key={i} className="flex gap-3 text-xs items-start">
-                <span className="mt-1 size-2 shrink-0 rounded-full bg-[#087CC9]" aria-hidden="true" />
+                <span className="mt-1 size-2 shrink-0 rounded-full bg-[#3E5BA9]" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[#17191D] font-medium">
+                  <p className="text-[#24221F] font-medium">
                     <span className="font-bold">{t.by}</span>
                     {t.note && t.note !== "Complaint submitted." && <span> — {t.note}</span>}
                     {t.note === "Complaint submitted." && <span> filed the complaint ticket.</span>}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-[#696B70]">
+                  <p className="mt-0.5 text-[11px] text-[#6F6A62]">
                     {formatDateTime(t.at)} · Status: <strong>{STATUS_LABEL[t.status]}</strong>
                   </p>
                 </div>
@@ -173,7 +173,7 @@ function ComplaintDetail({ complaintId, onClose, allowTriage }) {
         </div>
 
         {allowTriage && (
-          <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-4">
+          <div className="rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-4">
             <Field label="Warden Action Note" hint="Optional status note visible to resident.">
               <TextInput value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Electrician scheduled for inspection at 3:00 PM" />
             </Field>
@@ -201,14 +201,14 @@ function ComplaintRow({ complaint, onOpen }) {
     <button
       type="button"
       onClick={() => onOpen(complaint.id)}
-      className="flex w-full min-w-0 items-center gap-4 rounded-xl border border-[#E8EDF0] bg-white px-4 py-3.5 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-[#087CC9]/40 hover:shadow-card cursor-pointer"
+      className="flex w-full min-w-0 items-center gap-4 rounded-xl border border-[#E8E2D7] bg-white px-4 py-3.5 text-left shadow-xs transition-colors duration-200 hover:border-[#3E5BA9]/40 hover:shadow-card cursor-pointer"
     >
-      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F3FC] text-[#087CC9]" aria-hidden="true">
+      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFF8] text-[#3E5BA9]" aria-hidden="true">
         <Wrench className="size-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-bold text-sm text-[#17191D]">{complaint.title}</span>
-        <span className="mt-0.5 block text-xs text-[#696B70]">
+        <span className="block truncate font-bold text-sm text-[#24221F]">{complaint.title}</span>
+        <span className="mt-0.5 block text-xs text-[#6F6A62]">
           {complaint.id} · {complaint.category} · {timeAgo(complaint.createdAt)}
         </span>
       </span>
@@ -312,7 +312,7 @@ function AdminComplaints() {
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
             <Field label="Search Complaints">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#696B70]" aria-hidden="true" />
+                <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6F6A62]" aria-hidden="true" />
                 <TextInput
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -350,7 +350,7 @@ function AdminComplaints() {
         </CardBody>
       </Card>
 
-      <p className="text-xs text-[#696B70] mb-3 px-1" role="status">
+      <p className="text-xs text-[#6F6A62] mb-3 px-1" role="status">
         Showing <strong>{list.length}</strong> complaints matching filters
       </p>
 

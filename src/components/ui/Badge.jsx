@@ -1,35 +1,35 @@
 import { cn } from "../../lib/cn";
 
 const TONES = {
-  pine: "bg-[#E6F3FC] text-[#0866A8] border border-[#087CC9]/20",
-  mint: "bg-[#E2F6ED] text-[#16865A] border border-[#16865A]/20",
-  sand: "bg-[#F3FAFC] text-[#696B70] border border-[#E8EDF0]",
-  clay: "bg-[#F3E1F0] text-[#7E296A] border border-[#7E296A]/20",
-  brass: "bg-[#FEFAEB] text-[#8C6D04] border border-[#F2C316]/35",
-  danger: "bg-[#FDE8E8] text-[#B43B3B] border border-[#B43B3B]/20",
-  neutral: "bg-[#F3FAFC] text-[#696B70] border border-[#E8EDF0]",
-  ok: "bg-[#E2F6ED] text-[#16865A] border border-[#16865A]/20",
-  info: "bg-[#E6F3FC] text-[#087CC9] border border-[#087CC9]/20",
-  warn: "bg-[#FEFAEB] text-[#8C6D04] border border-[#F2C316]/35",
-  lavender: "bg-[#EDE5F7] text-[#5B3A8C] border border-[#5B3A8C]/20",
-  pink: "bg-[#F3E1F0] text-[#7E296A] border border-[#7E296A]/20",
-  gold: "bg-[#FEFAEB] text-[#8C6D04] border border-[#F2C316]/40",
+  pine: "bg-[#ECEFF8] text-[#2F4785] border border-[#3E5BA9]/20",
+  mint: "bg-[#E5F2E9] text-[#2F855A] border border-[#2F855A]/20",
+  sand: "bg-[#F7F4EE] text-[#6F6A62] border border-[#E8E2D7]",
+  clay: "bg-[#F8E7DE] text-[#9A4A2E] border border-[#9A4A2E]/20",
+  brass: "bg-[#FDF6E6] text-[#87600F] border border-[#E2A93B]/35",
+  danger: "bg-[#FBEAE6] text-[#B5483B] border border-[#B5483B]/20",
+  neutral: "bg-[#F7F4EE] text-[#6F6A62] border border-[#E8E2D7]",
+  ok: "bg-[#E5F2E9] text-[#2F855A] border border-[#2F855A]/20",
+  info: "bg-[#ECEFF8] text-[#3E5BA9] border border-[#3E5BA9]/20",
+  warn: "bg-[#FDF6E6] text-[#87600F] border border-[#E2A93B]/35",
+  lavender: "bg-[#EEE9F6] text-[#5B4590] border border-[#5B4590]/20",
+  pink: "bg-[#F8E7DE] text-[#9A4A2E] border border-[#9A4A2E]/20",
+  gold: "bg-[#FDF6E6] text-[#87600F] border border-[#E2A93B]/40",
 };
 
 const DOT_TONES = {
-  pine: "bg-[#0866A8]",
-  mint: "bg-[#16865A]",
-  sand: "bg-[#93969C]",
-  clay: "bg-[#7E296A]",
-  brass: "bg-[#C2990B]",
-  danger: "bg-[#B43B3B]",
-  neutral: "bg-[#93969C]",
-  ok: "bg-[#16865A]",
-  info: "bg-[#087CC9]",
-  warn: "bg-[#C2990B]",
-  lavender: "bg-[#5B3A8C]",
-  pink: "bg-[#7E296A]",
-  gold: "bg-[#F2C316]",
+  pine: "bg-[#2F4785]",
+  mint: "bg-[#2F855A]",
+  sand: "bg-[#A39D92]",
+  clay: "bg-[#9A4A2E]",
+  brass: "bg-[#B9862A]",
+  danger: "bg-[#B5483B]",
+  neutral: "bg-[#A39D92]",
+  ok: "bg-[#2F855A]",
+  info: "bg-[#3E5BA9]",
+  warn: "bg-[#B9862A]",
+  lavender: "bg-[#5B4590]",
+  pink: "bg-[#9A4A2E]",
+  gold: "bg-[#E2A93B]",
 };
 
 /**
@@ -44,7 +44,7 @@ export function Badge({ tone = "neutral", dot = false, size = "sm", className, c
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full font-semibold tracking-wide whitespace-nowrap",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-full font-medium whitespace-nowrap",
         size === "sm" ? "px-2.5 py-0.5 text-[11px]" : "px-3 py-1 text-xs",
         TONES[tone] ?? TONES.neutral,
         className,

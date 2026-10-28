@@ -75,24 +75,24 @@ export function AdminDashboard() {
 
       {/* Row 2: Occupancy + Complaint Triage */}
       <div className="grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="flex flex-col lg:col-span-2">
           <CardHeader
             title="Occupancy by Block"
             subtitle={`${totals.occupied.toLocaleString("en-IN")} of ${totals.beds.toLocaleString("en-IN")} total beds occupied`}
           />
-          <CardBody>
-            <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
+          <CardBody className="flex flex-1 items-center">
+            <div className="flex w-full flex-col items-center gap-6 sm:flex-row sm:gap-10">
               <Donut value={totals.pct} label="Overall occupancy" sublabel="all 4 blocks" />
               <ul className="w-full flex-1 space-y-4">
                 {blockStats.map((b) => {
                   const pct = getBlockPct(b);
                   return (
                     <li key={b.id} className="space-y-1.5">
-                      <div className="flex items-baseline justify-between text-xs sm:text-sm">
-                        <span className="font-semibold text-[#17191D]">{b.name}</span>
-                        <span className="text-[#696B70] tabular-nums">
+                      <div className="flex items-baseline justify-between text-[13px] sm:text-sm">
+                        <span className="font-medium text-[#24221F]">{b.name}</span>
+                        <span className="text-[#6F6A62] tabular-nums">
                           {b.occupiedBeds.toLocaleString("en-IN")} / {b.totalBeds.toLocaleString("en-IN")} beds ·{" "}
-                          <strong className="text-[#17191D]">{pct}%</strong>
+                          <strong className="text-[#24221F]">{pct}%</strong>
                         </span>
                       </div>
                       <ProgressBar value={pct} label={`${b.name} occupancy`} />
@@ -107,10 +107,10 @@ export function AdminDashboard() {
           </CardFooter>
         </Card>
 
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader title="Complaint Triage" subtitle="Operational queue breakdown" />
-          <CardBody>
-            <ul className="space-y-2.5">
+          <CardBody className="flex-1">
+            <ul className="divide-y divide-[#F0ECE4] rounded-xl border border-[#E8E2D7]">
               {[
                 ["submitted", submitted],
                 ["in_progress", inProgress],
@@ -118,12 +118,12 @@ export function AdminDashboard() {
               ].map(([status, count]) => (
                 <li
                   key={status}
-                  className="flex items-center justify-between rounded-xl bg-[#F3FAFC] border border-[#E8EDF0] px-3.5 py-2.5 transition-colors hover:border-[#087CC9]/30"
+                  className="flex items-center justify-between px-4 py-3"
                 >
                   <Badge tone={STATUS_TONES[status]} dot>
                     {STATUS_LABELS[status]}
                   </Badge>
-                  <span className="font-display text-xl font-bold text-[#17191D] tabular-nums">
+                  <span className="font-display text-lg font-semibold text-[#24221F] tabular-nums">
                     {count}
                   </span>
                 </li>
@@ -131,12 +131,12 @@ export function AdminDashboard() {
             </ul>
 
             {urgentOpen.length > 0 && (
-              <div className="mt-4 rounded-xl border border-[#B43B3B]/25 bg-[#FEF4F4] p-3.5">
+              <div className="mt-4 rounded-xl border-l-[3px] border-[#B5483B] bg-[#FEF6F4] p-3.5">
                 <div className="flex items-center gap-2">
                   <Badge tone="danger" dot>Action Required</Badge>
                 </div>
-                <p className="mt-2 text-xs leading-relaxed text-[#17191D]">
-                  <strong className="text-[#B43B3B]">{urgentOpen.length} high-priority</strong>{" "}
+                <p className="mt-2 text-[13px] leading-relaxed text-[#24221F]">
+                  <strong className="text-[#B5483B]">{urgentOpen.length} high-priority</strong>{" "}
                   {urgentOpen.length === 1 ? "complaint requires" : "complaints require"} attention
                   {urgentOpen[0] ? ` (${urgentOpen[0].id})` : ""}.
                 </p>
@@ -173,11 +173,11 @@ export function AdminDashboard() {
           <CardBody>
             <ul className="space-y-3.5">
               {announcements.map((a) => (
-                <li key={a.id} className="border-b border-[#E8EDF0]/70 pb-3 last:border-0 last:pb-0">
-                  <p className="line-clamp-2 text-sm font-semibold text-[#17191D] hover:text-[#087CC9] transition-colors">
+                <li key={a.id} className="border-b border-[#E8E2D7]/70 pb-3 last:border-0 last:pb-0">
+                  <p className="line-clamp-2 text-sm font-semibold text-[#24221F] hover:text-[#3E5BA9] transition-colors">
                     {a.title}
                   </p>
-                  <p className="mt-1 text-xs text-[#696B70]">
+                  <p className="mt-1 text-xs text-[#6F6A62]">
                     {a.category} · {timeAgo(a.publishedAt)}
                   </p>
                 </li>

@@ -47,7 +47,7 @@ function MealEditDialog({ day, mealKey, current, onClose }) {
             placeholder="List menu items separated by commas..."
           />
         </Field>
-        <div className="flex justify-end gap-2.5 pt-2 border-t border-[#E8EDF0]">
+        <div className="flex justify-end gap-2.5 pt-2 border-t border-[#E8E2D7]">
           <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
           <Button type="submit">Save Menu</Button>
         </div>
@@ -83,39 +83,36 @@ export function Mess() {
           return (
             <Card
               key={day}
-              hoverable
-              className={isToday ? "border-[#087CC9] ring-2 ring-[#087CC9]/20 shadow-md" : undefined}
+              className={isToday ? "border-[#3E5BA9]/50 ring-4 ring-[#3E5BA9]/[0.07]" : undefined}
             >
               <CardHeader
                 title={day}
                 subtitle={isToday ? "Today's Schedule" : "Daily Schedule"}
                 action={isToday ? <Badge tone="pine" dot>Today</Badge> : undefined}
               />
-              <CardBody className="space-y-3 pt-3">
+              <CardBody className="divide-y divide-[#F0ECE4] pt-2 pb-3">
                 {MEAL_ORDER.map((mealKey) => {
                   const isNow = isToday && mealKey === currentMeal;
                   return (
                     <div
                       key={mealKey}
-                      className={`group flex items-start justify-between gap-3 rounded-xl border p-3 transition-all duration-150 ${
-                        isNow
-                          ? "border-[#16865A]/30 bg-[#E2F6ED]/45 shadow-xs"
-                          : "border-[#E8EDF0] bg-[#F3FAFC] hover:border-[#087CC9]/30 hover:bg-white"
+                      className={`group relative flex items-start justify-between gap-3 py-3.5 ${
+                        isNow ? "-mx-3 rounded-lg border-transparent bg-[#E5F2E9]/60 px-3" : ""
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#696B70]">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="text-[12px] font-medium text-[#9A7B4F]">
                             {MEAL_LABELS[mealKey]}
+                          </span>
+                          <span className="flex items-center gap-1 text-[12px] text-[#A39D92]">
+                            <Clock className="size-3" aria-hidden="true" />
+                            {MEAL_TIMES[mealKey]}
                           </span>
                           {isNow && <Badge tone="ok" dot size="sm">Serving Now</Badge>}
                         </div>
-                        <p className="mt-1 text-sm font-semibold leading-snug text-[#17191D]">
+                        <p className="mt-1 text-[15px] font-medium leading-snug text-[#24221F]">
                           {state.messMenu[day][mealKey]}
-                        </p>
-                        <p className="mt-1 flex items-center gap-1 text-[11px] text-[#696B70]">
-                          <Clock className="size-3 text-[#696B70]" aria-hidden="true" />
-                          {MEAL_TIMES[mealKey]}
                         </p>
                       </div>
                       {isAdmin && (
@@ -123,7 +120,7 @@ export function Mess() {
                           type="button"
                           onClick={() => setEditing({ day, mealKey })}
                           aria-label={`Edit ${day} ${MEAL_LABELS[mealKey]}`}
-                          className="shrink-0 rounded-lg p-2 text-[#696B70] transition-colors hover:bg-white hover:text-[#087CC9] cursor-pointer"
+                          className="shrink-0 rounded-lg p-2 text-[#A39D92] transition-colors hover:bg-[#F0ECE4] hover:text-[#24221F] cursor-pointer"
                         >
                           <Pencil className="size-3.5" aria-hidden="true" />
                         </button>
@@ -138,13 +135,13 @@ export function Mess() {
       </div>
 
       {/* Info card */}
-      <Card className="border-[#087CC9]/20 bg-[#E6F3FC]/50">
+      <Card className="border-[#E8E2D7] bg-[#FAF8F3] shadow-none">
         <CardBody className="flex items-start gap-4">
-          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#087CC9] text-white shadow-xs" aria-hidden="true">
+          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#FDF6E6] text-[#87600F]" aria-hidden="true">
             <UtensilsCrossed className="size-5" />
           </span>
-          <div className="text-xs text-[#52555B] leading-relaxed">
-            <p className="font-bold text-[#17191D] text-sm mb-0.5">Dining Hall Information & Special Dietary Requests</p>
+          <div className="text-[13px] text-[#58534B] leading-relaxed">
+            <p className="font-semibold text-[#24221F] text-sm mb-1">Dining Hall Information & Special Dietary Requests</p>
             <p>
               Vegetarian and special dietary preparations (including Jain meals) are available daily upon request at Counter 1.
               For menu feedback or dietary suggestions, please file a ticket under the Mess category in the Complaints module.

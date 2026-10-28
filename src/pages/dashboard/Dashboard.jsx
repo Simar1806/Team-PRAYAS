@@ -21,7 +21,9 @@ export function Dashboard() {
         description={`${formatFullDate()} · ${
           isAdmin
             ? "Live operational overview across all residence blocks"
-            : `Block ${student.block} · Room ${student.roomId} · Bed ${student.bed}`
+            : student?.roomId
+              ? `${student.studentCode} · Block ${student.block} · Room ${student.roomId} · Bed ${student.bed}`
+              : `${student?.studentCode || ""} · Room not yet allotted`
         }`}
         actions={
           <Badge tone={isAdmin ? "pine" : "mint"} dot size="md">

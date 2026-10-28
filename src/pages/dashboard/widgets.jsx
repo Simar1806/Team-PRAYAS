@@ -12,11 +12,11 @@ export const PRIORITY_TONES = { low: "neutral", medium: "info", high: "clay", ur
 export const PRIORITY_LABELS = { low: "Low", medium: "Medium", high: "High", urgent: "Urgent" };
 
 const KIND_DOTS = {
-  complaint: "bg-[#B43B3B]",
-  room: "bg-[#087CC9]",
-  announcement: "bg-[#F2C316]",
-  mess: "bg-[#16865A]",
-  maintenance: "bg-[#7E296A]",
+  complaint: "bg-[#B5483B]",
+  room: "bg-[#3E5BA9]",
+  announcement: "bg-[#E2A93B]",
+  mess: "bg-[#2F855A]",
+  maintenance: "bg-[#9A4A2E]",
 };
 
 /**
@@ -29,21 +29,21 @@ export function ActivityTimeline({ items }) {
       {items.map((item, i) => (
         <li key={item.id} className="relative flex gap-3.5 items-start">
           {i < items.length - 1 && (
-            <span className="absolute top-5 left-[6.5px] h-[calc(100%-8px)] w-px bg-[#E8EDF0]" aria-hidden="true" />
+            <span className="absolute top-5 left-[6.5px] h-[calc(100%-8px)] w-px bg-[#E8E2D7]" aria-hidden="true" />
           )}
           <span
             className={cn(
               "mt-1.5 size-3.5 shrink-0 rounded-full ring-3 ring-white",
-              KIND_DOTS[item.kind] ?? "bg-[#696B70]",
+              KIND_DOTS[item.kind] ?? "bg-[#6F6A62]",
             )}
             aria-hidden="true"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-sm text-[#17191D] leading-snug">
-              <span className="font-semibold text-[#17191D]">{item.actor}</span>{" "}
-              <span className="text-[#52555B]">{item.text.charAt(0).toLowerCase() + item.text.slice(1)}</span>
+            <p className="text-sm text-[#24221F] leading-snug">
+              <span className="font-semibold text-[#24221F]">{item.actor}</span>{" "}
+              <span className="text-[#58534B]">{item.text.charAt(0).toLowerCase() + item.text.slice(1)}</span>
             </p>
-            <p className="mt-0.5 text-xs text-[#696B70]">{timeAgo(item.at)}</p>
+            <p className="mt-0.5 text-xs text-[#6F6A62]">{timeAgo(item.at)}</p>
           </div>
         </li>
       ))}
@@ -66,18 +66,18 @@ export function QuickActionTiles({ actions }) {
             <Link
               key={to + label}
               to={to}
-              className="group rounded-xl border border-[#E8EDF0] bg-white p-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#087CC9]/40 hover:shadow-card hover:bg-[#F3FAFC]"
+              className="group rounded-xl border border-[#E8E2D7] bg-white p-3.5 transition-colors duration-150 hover:border-[#DCD4C6] hover:bg-[#FAF8F3]"
             >
               <span
-                className="inline-flex size-9 items-center justify-center rounded-xl bg-[#E6F3FC] text-[#087CC9] transition-all duration-200 group-hover:bg-[#087CC9] group-hover:text-white"
+                className="inline-flex size-9 items-center justify-center rounded-lg bg-[#F0ECE4] text-[#58534B] transition-colors duration-150 group-hover:bg-[#ECEFF8] group-hover:text-[#3E5BA9]"
                 aria-hidden="true"
               >
                 <Icon className="size-4.5" />
               </span>
-              <span className="mt-2.5 block text-sm font-semibold text-[#17191D] group-hover:text-[#0866A8]">
+              <span className="mt-2.5 block text-sm font-medium text-[#24221F]">
                 {label}
               </span>
-              <span className="mt-0.5 block text-xs text-[#696B70] line-clamp-1">{hint}</span>
+              <span className="mt-0.5 block text-xs text-[#6F6A62] line-clamp-1">{hint}</span>
             </Link>
           ))}
         </div>
@@ -91,7 +91,7 @@ export function CardMoreLink({ to, children }) {
   return (
     <Link
       to={to}
-      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#087CC9] transition-all duration-150 hover:gap-2 hover:text-[#0866A8]"
+      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#3E5BA9] transition-colors duration-150 hover:text-[#2F4785]"
     >
       {children}
       <ArrowRight className="size-3.5" aria-hidden="true" />

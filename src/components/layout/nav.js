@@ -77,16 +77,21 @@ export const ALL_NAV_ITEMS = [
     icon: KeyRound,
     blurb: "Manage hostel logins, credentials, and access permissions.",
     roles: ["admin"],
+    requires: "accounts",
   },
 ];
 
 /**
  * Navigation items for the selected audience, with student-facing labels applied.
  * @param {"student"|"admin"} role
+ * @param {{canManageAccounts?: boolean}} [perms] items flagged `requires: "accounts"`
+ *   are shown only to the chief administrator and admins granted that access
  * @returns {NavItem[]}
  */
-export function getNavItems(role) {
-  return ALL_NAV_ITEMS.filter((item) => item.roles.includes(role)).map((item) => ({
+export function getNavItems(role, perms = {}) {
+  return ALL_NAV_ITEMS.filter(
+    (item) => item.roles.includes(role) && (item.requires !== "accounts" || perms.canManageAccounts),
+  ).map((item) => ({
     ...item,
     label: role === "student" && item.studentLabel ? item.studentLabel : item.label,
     blurb: role === "student" && item.studentBlurb ? item.studentBlurb : item.blurb,

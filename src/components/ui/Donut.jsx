@@ -26,8 +26,8 @@ export function Donut({ value, size = 132, stroke = 12, label, sublabel }) {
       <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
         <defs>
           <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#087CC9" />
-            <stop offset="100%" stopColor="#0866A8" />
+            <stop offset="0%" stopColor="#3E5BA9" />
+            <stop offset="100%" stopColor="#2F4785" />
           </linearGradient>
         </defs>
         <circle
@@ -35,7 +35,7 @@ export function Donut({ value, size = 132, stroke = 12, label, sublabel }) {
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#E8EDF0"
+          stroke="#E8E2D7"
           strokeWidth={stroke}
         />
         <circle
@@ -47,15 +47,15 @@ export function Donut({ value, size = 132, stroke = 12, label, sublabel }) {
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${filled} ${c}`}
-          className="transition-all duration-700 ease-out"
+          className="transition-colors duration-700 ease-out"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="font-display text-2xl font-bold text-[#17191D] tabular-nums tracking-tight">
+        <span className="font-display text-2xl font-semibold text-[#24221F] tabular-nums tracking-tight">
           {Math.round(pct)}%
         </span>
         {sublabel && (
-          <span className="mt-0.5 px-2 text-[11px] font-medium text-[#696B70] leading-tight">
+          <span className="mt-0.5 px-2 text-[11px] font-medium text-[#6F6A62] leading-tight">
             {sublabel}
           </span>
         )}

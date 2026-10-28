@@ -119,8 +119,14 @@ export function searchStudents(students, query) {
   const q = query.trim().toLowerCase();
   if (!q) return students;
   return students.filter((s) =>
-    [s.name, s.course, s.id, s.roomId ?? "", s.phone ?? ""].some((v) => v.toLowerCase().includes(q)),
+    [s.name, s.course, s.id, s.studentCode, s.roomId, s.phone].some((v) => (v ?? "").toLowerCase().includes(q)),
   );
+}
+
+/** "B.Tech CSE · Year 2", or a pending note for a freshly issued ID. */
+export function academicLine(student) {
+  if (!student?.course) return "Profile pending";
+  return `${student.course}${student.year ? ` · Year ${student.year}` : ""}`;
 }
 
 /* ---------- complaints ---------- */

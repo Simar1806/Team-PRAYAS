@@ -14,10 +14,22 @@ export function validateStudent(data) {
   const year = Number(data.year);
   if (!Number.isInteger(year) || year < 1 || year > 5) errors.year = "Year must be between 1 and 5.";
 
+  const phoneRe = /^[+\d][\d\s-]{6,17}$/;
   const phone = (data.phone || "").trim();
-  if (phone && !/^[+\d][\d\s-]{6,17}$/.test(phone)) {
-    errors.phone = "Enter a valid phone number, e.g. +91 98110 22334.";
-  }
+  if (!phone) errors.phone = "Phone number is required.";
+  else if (!phoneRe.test(phone)) errors.phone = "Enter a valid phone number, e.g. +91 98110 22334.";
+
+  const email = (data.email || "").trim();
+  if (!email) errors.email = "Email is required.";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address.";
+
+  if (!data.dob) errors.dob = "Date of birth is required.";
+  if (!(data.address || "").trim()) errors.address = "Home address is required.";
+  if (!(data.guardianName || "").trim()) errors.guardianName = "Guardian name is required.";
+
+  const gPhone = (data.guardianPhone || "").trim();
+  if (!gPhone) errors.guardianPhone = "Guardian phone is required.";
+  else if (!phoneRe.test(gPhone)) errors.guardianPhone = "Enter a valid phone number.";
   return errors;
 }
 

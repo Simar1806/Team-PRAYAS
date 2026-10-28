@@ -17,6 +17,7 @@ import {
 import {
   Avatar,
   Badge,
+  EmptyState,
   Card,
   CardBody,
   CardFooter,
@@ -38,8 +39,8 @@ export function StudentDashboard() {
   const { studentId } = useView();
   const { state } = useHaven();
   const student = getStudent(state.students, studentId);
-  const room = getRoom(state.rooms, student.roomId);
-  const roommates = getRoommates(room, state.students, studentId);
+  const room = student?.roomId ? getRoom(state.rooms, student.roomId) : null;
+  const roommates = room ? getRoommates(room, state.students, studentId) : [];
   const myComplaints = getStudentComplaints(state.complaints, studentId).slice(0, 3);
   const openCount = myComplaints.filter((c) => c.status !== "resolved").length;
   const inProgress = myComplaints.filter((c) => c.status === "in_progress").length;
@@ -47,7 +48,7 @@ export function StudentDashboard() {
   const mealKey = getCurrentMealKey();
   const announcements = getSortedAnnouncements(state.announcements).slice(0, 4);
   const urgentCount = getUrgentAnnouncements(state.announcements).length;
-  const occupancyPct = Math.round((room.occupantIds.length / room.capacity) * 100);
+  const occupancyPct = room ? Math.round((room.occupantIds.length / room.capacity) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -55,10 +56,10 @@ export function StudentDashboard() {
       <div className="grid grid-cols-2 gap-3.5 sm:gap-4 xl:grid-cols-4">
         <Stat
           label="My Room"
-          value={room.id}
+          value={room ? room.id : "Pending"}
           icon={BedDouble}
           tone="pine"
-          trend={{ direction: "flat", text: `Bed ${student.bed} · Block ${student.block}` }}
+          trend={{ direction: "flat", text: room ? `Bed ${student.bed} · Block ${student.block}` : "Awaiting allotment" }}
         />
         <Stat
           label="My Complaints"
@@ -85,6 +86,18 @@ export function StudentDashboard() {
 
       {/* Row 2: Room Details + Mess Today */}
       <div className="grid gap-5 lg:grid-cols-3">
+        {!room ? (
+          <Card className="lg:col-span-2">
+            <CardHeader title="My Room Assignment" subtitle="Your bed will appear here once allotted" />
+            <CardBody>
+              <EmptyState
+                icon={BedDouble}
+                title="No room allotted yet"
+                description="The warden's office will assign your room and bed shortly. You can still use the mess menu, notices and complaints."
+              />
+            </CardBody>
+          </Card>
+        ) : (
         <Card className="lg:col-span-2">
           <CardHeader
             title="My Room Assignment"
@@ -92,20 +105,20 @@ export function StudentDashboard() {
             action={<Badge tone="mint" dot>Active Allotment</Badge>}
           />
           <CardBody>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 pb-4 border-b border-[#E8EDF0]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 pb-4 border-b border-[#E8E2D7]">
               <div className="flex items-center gap-3">
-                <span className="inline-flex size-12 items-center justify-center rounded-xl bg-[#E6F3FC] text-[#087CC9]">
+                <span className="inline-flex size-12 items-center justify-center rounded-xl bg-[#ECEFF8] text-[#3E5BA9]">
                   <BedDouble className="size-6" />
                 </span>
                 <div>
-                  <span className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#0866A8]">
+                  <span className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-[#2F4785]">
                     {room.id}
                   </span>
-                  <p className="text-xs text-[#696B70]">Assigned Bed: <strong>Bed {student.bed}</strong></p>
+                  <p className="text-xs text-[#6F6A62]">Assigned Bed: <strong>Bed {student.bed}</strong></p>
                 </div>
               </div>
               <div className="flex-1">
-                <div className="flex justify-between text-xs text-[#696B70] mb-1.5 font-medium">
+                <div className="flex justify-between text-xs text-[#6F6A62] mb-1.5 font-medium">
                   <span>Room Capacity</span>
                   <span>{occupancyPct}% full</span>
                 </div>
@@ -113,19 +126,19 @@ export function StudentDashboard() {
               </div>
             </div>
 
-            <p className="mt-4 mb-2.5 text-[11px] font-bold tracking-[0.14em] text-[#696B70] uppercase">
+            <p className="mt-4 mb-2.5 text-[13px] font-medium text-[#6F6A62]">
               Current Roommates
             </p>
             <ul className="grid gap-2.5 sm:grid-cols-2">
               {roommates.map((m) => (
                 <li
                   key={m.id}
-                  className="flex items-center gap-3 rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3 transition-colors hover:border-[#087CC9]/30"
+                  className="flex items-center gap-3 rounded-xl border border-[#E8E2D7] bg-white p-3 transition-colors hover:bg-[#FAF8F3]"
                 >
                   <Avatar name={m.name} size="sm" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#17191D]">{m.name}</p>
-                    <p className="text-xs text-[#696B70]">Bed {m.bed} · {m.course}</p>
+                    <p className="truncate text-sm font-semibold text-[#24221F]">{m.name}</p>
+                    <p className="text-xs text-[#6F6A62]">Bed {m.bed} · {m.course}</p>
                   </div>
                 </li>
               ))}
@@ -135,30 +148,29 @@ export function StudentDashboard() {
             <CardMoreLink to="/rooms">View room details</CardMoreLink>
           </CardFooter>
         </Card>
+        )}
 
         <Card>
           <CardHeader title="Today's Mess Menu" subtitle={formatFullDate().split(",").slice(0, 2).join(",")} />
           <CardBody>
-            <ul className="space-y-3">
+            <ul className="divide-y divide-[#F0ECE4]">
               {MEAL_ORDER.map((key) => {
                 const isNow = mealKey === key;
                 return (
                   <li
                     key={key}
-                    className={`rounded-xl p-3 border transition-colors ${
-                      isNow
-                        ? "border-[#16865A]/30 bg-[#E2F6ED]/40"
-                        : "border-[#E8EDF0] bg-[#F3FAFC]"
+                    className={`py-3 first:pt-0 last:pb-0 ${
+                      isNow ? "-mx-3 rounded-lg border-transparent bg-[#E5F2E9]/60 px-3 first:pt-3 last:pb-3" : ""
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-[#17191D] flex items-center gap-1.5">
+                      <p className="text-[12px] font-medium text-[#9A7B4F] flex items-center gap-1.5">
                         {MEAL_LABELS[key]}
                         {isNow && <Badge tone="ok" dot size="sm">Now</Badge>}
                       </p>
-                      <span className="text-[11px] text-[#696B70]">{MEAL_TIMES[key]}</span>
+                      <span className="text-[12px] text-[#A39D92]">{MEAL_TIMES[key]}</span>
                     </div>
-                    <p className="mt-1 text-xs text-[#52555B] line-clamp-2 leading-relaxed">
+                    <p className="mt-0.5 text-sm text-[#24221F] line-clamp-2 leading-relaxed">
                       {menu[key]}
                     </p>
                   </li>
@@ -181,16 +193,16 @@ export function StudentDashboard() {
           />
           <CardBody>
             {myComplaints.length === 0 ? (
-              <p className="py-6 text-center text-sm text-[#696B70]">
+              <p className="py-6 text-center text-sm text-[#6F6A62]">
                 No complaints filed. Everything is running smoothly!
               </p>
             ) : (
-              <ul className="divide-y divide-[#E8EDF0]">
+              <ul className="divide-y divide-[#E8E2D7]">
                 {myComplaints.map((c) => (
                   <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="min-w-0 flex-1 basis-48">
-                      <p className="truncate text-sm font-semibold text-[#17191D]">{c.title}</p>
-                      <p className="mt-0.5 text-xs text-[#696B70]">
+                      <p className="truncate text-sm font-semibold text-[#24221F]">{c.title}</p>
+                      <p className="mt-0.5 text-xs text-[#6F6A62]">
                         {c.id} · {c.category} · {timeAgo(c.createdAt)}
                       </p>
                     </div>
@@ -219,15 +231,15 @@ export function StudentDashboard() {
               {announcements.map((a) => (
                 <li
                   key={a.id}
-                  className={`border-b border-[#E8EDF0]/70 pb-3 last:border-0 last:pb-0 ${
-                    a.priority === "urgent" ? "rounded-lg bg-[#FEF4F4] p-2 border-[#B43B3B]/20" : ""
+                  className={`border-b border-[#E8E2D7]/70 pb-3 last:border-0 last:pb-0 ${
+                    a.priority === "urgent" ? "rounded-lg bg-[#FEF6F4] p-2 border-[#B5483B]/20" : ""
                   }`}
                 >
-                  <p className="flex items-center gap-1.5 text-sm font-semibold text-[#17191D]">
+                  <p className="flex items-center gap-1.5 text-sm font-semibold text-[#24221F]">
                     {a.priority === "urgent" && <Badge tone="danger" dot>Urgent</Badge>}
                     <span className="line-clamp-1">{a.title}</span>
                   </p>
-                  <p className="mt-1 text-xs text-[#696B70]">
+                  <p className="mt-1 text-xs text-[#6F6A62]">
                     {a.category} · {timeAgo(a.publishedAt)}
                   </p>
                 </li>

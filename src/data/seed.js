@@ -119,7 +119,50 @@ function buildStudents(rooms) {
       room.occupantIds.push(id);
     }
   }
-  return students;
+  return withLoginIds(students);
+}
+
+export const STUDENT_ID_PREFIX = "STU2026";
+export const DEFAULT_STUDENT_PASSWORD = "Student@123";
+export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+const CITIES = ["Ludhiana, Punjab", "Chandigarh", "Jaipur, Rajasthan", "Lucknow, Uttar Pradesh", "Pune, Maharashtra", "Kochi, Kerala", "Bhopal, Madhya Pradesh", "Dehradun, Uttarakhand", "Amritsar, Punjab", "Hyderabad, Telangana"];
+
+/** Formats the n-th issued student login ID, e.g. 7 -> STU2026007. */
+export function formatStudentCode(n) {
+  return `${STUDENT_ID_PREFIX}${String(n).padStart(3, "0")}`;
+}
+
+/**
+ * Every demo student gets an administrator-issued login ID (STU2026001...)
+ * plus a completed profile. Aarav and Priya keep 001/002 so the demo
+ * credentials stay stable.
+ */
+function withLoginIds(students) {
+  const rand = mulberry32(424242);
+  const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+  const digits = (n) => Array.from({ length: n }, () => Math.floor(rand() * 10)).join("");
+  const ordered = [
+    ...students.filter((s) => s.id === "aarav"),
+    ...students.filter((s) => s.id === "priya"),
+    ...students.filter((s) => s.id !== "aarav" && s.id !== "priya"),
+  ];
+  const codes = new Map(ordered.map((s, i) => [s.id, formatStudentCode(i + 1)]));
+  return students.map((s) => {
+    const [first, ...rest] = s.name.toLowerCase().split(" ");
+    const last = rest.join("") || "student";
+    const birthYear = 2008 - s.year - Math.floor(rand() * 2);
+    return {
+      ...s,
+      studentCode: codes.get(s.id),
+      profileComplete: true,
+      email: `${first}.${last}@haven.edu.in`,
+      dob: `${birthYear}-${String(1 + Math.floor(rand() * 12)).padStart(2, "0")}-${String(1 + Math.floor(rand() * 28)).padStart(2, "0")}`,
+      bloodGroup: pick(BLOOD_GROUPS),
+      address: pick(CITIES),
+      guardianName: `${pick(["Rajesh", "Sunil", "Anita", "Meena", "Harpreet", "Vijay", "Kavita", "Sanjay"])} ${s.name.split(" ").slice(-1)[0]}`,
+      guardianPhone: `+91 9${digits(4)} ${digits(5)}`,
+    };
+  });
 }
 
 function buildComplaints() {
@@ -360,13 +403,15 @@ function buildActivity() {
 }
 
 export function buildAccounts(students = []) {
-  return [
+  const staff = [
     {
       id: "acc-1",
       username: "admin",
       password: "Admin@123",
       name: "Chief Warden",
       role: "admin",
+      isChief: true,
+      canManageAccounts: true,
       studentId: null,
       status: "active",
       createdAt: daysAgo(30).toISOString(),
@@ -374,38 +419,34 @@ export function buildAccounts(students = []) {
     },
     {
       id: "acc-2",
-      username: "STU2026001",
-      password: "Student@123",
-      name: "Aarav Sharma",
-      role: "student",
-      studentId: "aarav",
-      status: "active",
-      createdAt: daysAgo(30).toISOString(),
-      lastLogin: hoursAgo(5).toISOString(),
-    },
-    {
-      id: "acc-3",
-      username: "STU2026002",
-      password: "Student@123",
-      name: "Priya Nair",
-      role: "student",
-      studentId: "priya",
-      status: "active",
-      createdAt: daysAgo(20).toISOString(),
-      lastLogin: daysAgo(1).toISOString(),
-    },
-    {
-      id: "acc-4",
       username: "warden2",
       password: "Warden@123",
       name: "Assistant Warden",
       role: "admin",
+      isChief: false,
+      canManageAccounts: false,
       studentId: null,
       status: "active",
       createdAt: daysAgo(15).toISOString(),
       lastLogin: daysAgo(2).toISOString(),
     },
   ];
+  const studentAccounts = [...students]
+    .sort((a, b) => a.studentCode.localeCompare(b.studentCode))
+    .map((s, i) => ({
+      id: `acc-${i + 3}`,
+      username: s.studentCode,
+      password: DEFAULT_STUDENT_PASSWORD,
+      name: s.name,
+      role: "student",
+      isChief: false,
+      canManageAccounts: false,
+      studentId: s.id,
+      status: "active",
+      createdAt: daysAgo(30 - Math.min(25, Math.floor(i / 15))).toISOString(),
+      lastLogin: null,
+    }));
+  return [...staff, ...studentAccounts];
 }
 
 /**
@@ -446,6 +487,12 @@ export const DEMO_ACCOUNTS = {
     username: "admin",
     password: "Admin@123",
     name: "Chief Warden",
+    role: "admin",
+  },
+  subAdmin: {
+    username: "warden2",
+    password: "Warden@123",
+    name: "Assistant Warden",
     role: "admin",
   },
 };

@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Check,
   Copy,
+  Crown,
   GraduationCap,
+  Lock,
+  Unlock,
   KeyRound,
   Plus,
   RefreshCw,
@@ -29,7 +33,10 @@ import {
 } from "../../components/ui/index.js";
 import { useAuth } from "../../state/demo.jsx";
 import { useHaven } from "../../store/havenStore.jsx";
-import { actions } from "../../store/reducer.js";
+import { actions, nextStudentCode } from "../../store/reducer.js";
+import { DEFAULT_STUDENT_PASSWORD } from "../../data/seed.js";
+
+const PAGE_SIZE = 25;
 
 function generateRandomPassword(prefix = "Haven") {
   const digits = Math.floor(100 + Math.random() * 900);
@@ -39,7 +46,9 @@ function generateRandomPassword(prefix = "Haven") {
 }
 
 export function Accounts() {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isChief } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [visible, setVisible] = useState(PAGE_SIZE);
   const { state, dispatch } = useHaven();
   const pushToast = useToast();
 
@@ -55,23 +64,15 @@ export function Accounts() {
 
   // Form states for Create Account
   const [newRole, setNewRole] = useState("student");
-  const [selectedStudentId, setSelectedStudentId] = useState("");
   const [newName, setNewName] = useState("");
   const [newUsername, setNewUsername] = useState("");
-  const [newPassword, setNewPassword] = useState("Student@123");
+  const [newPassword, setNewPassword] = useState(DEFAULT_STUDENT_PASSWORD);
+  const [newCanManage, setNewCanManage] = useState(false);
   const [formError, setFormError] = useState("");
 
   // Form states for Reset Password
   const [resetPassword, setResetPassword] = useState("");
   const [copied, setCopied] = useState(false);
-
-  // Existing students that do not yet have an account
-  const unlinkedStudents = useMemo(() => {
-    const existingStudentIds = new Set(
-      accounts.filter((a) => a.studentId).map((a) => a.studentId),
-    );
-    return state.students.filter((s) => !existingStudentIds.has(s.id));
-  }, [state.students, accounts]);
 
   // Filtered accounts list
   const filteredAccounts = useMemo(() => {
@@ -87,7 +88,9 @@ export function Accounts() {
       );
     }
 
-    if (roleFilter !== "all") {
+    if (roleFilter === "chief") return list.filter((a) => a.isChief);
+
+    if (roleFilter !== "all" && roleFilter !== "chief") {
       list = list.filter((a) => a.role === roleFilter);
     }
 
@@ -103,24 +106,43 @@ export function Accounts() {
   const studentCount = accounts.filter((a) => a.role === "student").length;
   const adminCount = accounts.filter((a) => a.role === "admin").length;
   const activeCount = accounts.filter((a) => (a.status || "active") === "active").length;
+  const pendingProfiles = state.students.filter((st) => !st.profileComplete).length;
+  const studentById = useMemo(() => new Map(state.students.map((st) => [st.id, st])), [state.students]);
 
-  const openCreateModal = () => {
-    setNewRole("student");
-    setSelectedStudentId("");
+  // Reset the visible window whenever the filters change.
+  useEffect(() => {
+    setVisible(PAGE_SIZE);
+  }, [query, roleFilter, statusFilter]);
+
+  const openCreateModal = (role = "student") => {
+    const asRole = isChief ? role : "student";
+    setNewRole(asRole);
     setNewName("");
-    setNewUsername("");
-    setNewPassword("Student@123");
+    setNewUsername(asRole === "student" ? nextStudentCode(state) : "");
+    setNewPassword(asRole === "student" ? DEFAULT_STUDENT_PASSWORD : "Admin@123");
+    setNewCanManage(false);
     setFormError("");
     setModal({ type: "create" });
   };
 
-  const handleStudentSelect = (studentId) => {
-    setSelectedStudentId(studentId);
-    if (!studentId) return;
-    const student = state.students.find((s) => s.id === studentId);
-    if (student) {
-      setNewName(student.name);
-      setNewUsername(student.id);
+  // Deep link from the Students page: /accounts?issue=student
+  useEffect(() => {
+    if (searchParams.get("issue") === "student") {
+      openCreateModal("student");
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const switchRole = (role) => {
+    setNewRole(role);
+    setFormError("");
+    if (role === "student") {
+      setNewUsername(nextStudentCode(state));
+      setNewPassword(DEFAULT_STUDENT_PASSWORD);
+    } else {
+      setNewUsername("");
+      setNewPassword("Admin@123");
     }
   };
 
@@ -132,7 +154,7 @@ export function Accounts() {
     const trimmedName = newName.trim();
 
     if (!trimmedUser) {
-      setFormError("Username is required.");
+      setFormError(newRole === "student" ? "Student ID is required." : "Username is required.");
       return;
     }
     if (!trimmedName) {
@@ -159,13 +181,19 @@ export function Accounts() {
         name: trimmedName,
         password: newPassword,
         role: newRole,
-        studentId: newRole === "student" ? selectedStudentId || null : null,
+        canManageAccounts: newRole === "admin" && newCanManage,
         status: "active",
       }),
     );
 
     setModal(null);
-    pushToast("success", "Account provisioned", `Account for ${trimmedName} (${trimmedUser}) is now active.`);
+    pushToast(
+      "success",
+      newRole === "student" ? "Student ID issued" : "Administrator added",
+      newRole === "student"
+        ? `${trimmedName} (${trimmedUser}) is now in the Student Directory and will complete their profile at first sign-in.`
+        : `${trimmedName} (@${trimmedUser}) can now sign in${newCanManage ? " with Accounts access" : ""}.`,
+    );
   };
 
   const openResetModal = (account) => {
@@ -215,9 +243,25 @@ export function Accounts() {
 
   const handleDeleteSubmit = () => {
     dispatch(actions.removeAccount(modal.account.id));
-    const targetName = modal.account.name;
+    const { name: targetName, role } = modal.account;
     setModal(null);
-    pushToast("success", "Account deleted", `${targetName}'s login account was removed.`);
+    pushToast(
+      "success",
+      role === "student" ? "Student deleted" : "Account deleted",
+      role === "student"
+        ? `${targetName}'s student ID and directory record were removed.`
+        : `${targetName}'s login account was removed.`,
+    );
+  };
+
+  const handlePermissionToggle = (account) => {
+    const next = !account.canManageAccounts;
+    dispatch(actions.setAccountPermission(account.id, next));
+    pushToast(
+      "success",
+      next ? "Access granted" : "Access removed",
+      `${account.name} ${next ? "can now" : "can no longer"} manage accounts and student IDs.`,
+    );
   };
 
   return (
@@ -225,40 +269,33 @@ export function Accounts() {
       <PageHeader
         eyebrow="Access Control"
         title="Account Management"
-        description="Provision resident credentials, manage administrative accounts, reset passwords, and monitor system access."
+        description="Every student joins Haven through an ID issued here. Issue student IDs, add staff administrators, reset passwords, and control who can manage accounts."
         actions={
-          <Button variant="primary" onClick={openCreateModal} className="shadow-xs">
-            <Plus className="size-4" />
-            Provision Account
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {isChief && (
+              <Button variant="secondary" onClick={() => openCreateModal("admin")}>
+                <ShieldCheck className="size-4" />
+                Add Administrator
+              </Button>
+            )}
+            <Button variant="primary" onClick={() => openCreateModal("student")}>
+              <Plus className="size-4" />
+              Issue Student ID
+            </Button>
+          </div>
         }
       />
 
       {/* KPI Stats */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 mb-8">
+        <Stat label="Total Accounts" value={String(totalCount)} icon={Users} tone="pine" />
+        <Stat label="Student IDs" value={String(studentCount)} icon={GraduationCap} tone="lavender" />
+        <Stat label="Administrators" value={String(adminCount)} icon={ShieldCheck} tone="brass" />
         <Stat
-          label="Total Accounts"
-          value={totalCount}
-          helper="Registered in system"
-          tone="default"
-        />
-        <Stat
-          label="Student Logins"
-          value={studentCount}
-          helper="Resident portal access"
-          tone="info"
-        />
-        <Stat
-          label="Admin Staff"
-          value={adminCount}
-          helper="Warden console access"
-          tone="warn"
-        />
-        <Stat
-          label="Active Accounts"
-          value={activeCount}
-          helper="Permitted to sign in"
-          tone="success"
+          label="Profiles Pending"
+          value={String(pendingProfiles)}
+          tone={pendingProfiles > 0 ? "clay" : "mint"}
+          trend={{ direction: "flat", text: `${activeCount} accounts active` }}
         />
       </div>
 
@@ -268,7 +305,7 @@ export function Accounts() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-12">
             {/* Search Input */}
             <div className="sm:col-span-3 lg:col-span-6 relative">
-              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#696B70]">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#6F6A62]">
                 <Search className="size-4" />
               </span>
               <TextInput
@@ -289,6 +326,7 @@ export function Accounts() {
                 <option value="all">All Roles</option>
                 <option value="student">Resident Students</option>
                 <option value="admin">Administrators</option>
+                <option value="chief">Chief Administrator</option>
               </Select>
             </div>
 
@@ -332,7 +370,7 @@ export function Accounts() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#E8EDF0] bg-[#F3FAFC]/75 text-[11px] font-bold tracking-[0.08em] text-[#696B70] uppercase">
+                <tr className="border-b border-[#E8E2D7] bg-[#F7F4EE]/75 text-[13px] font-medium text-[#6F6A62]">
                   <th className="py-3.5 pl-6 pr-4">User</th>
                   <th className="py-3.5 px-4">Role</th>
                   <th className="py-3.5 px-4">Account Status</th>
@@ -340,16 +378,19 @@ export function Accounts() {
                   <th className="py-3.5 pr-6 pl-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E8EDF0]">
-                {filteredAccounts.map((account) => {
+              <tbody className="divide-y divide-[#E8E2D7]">
+                {filteredAccounts.slice(0, visible).map((account) => {
                   const isActive = (account.status || "active") === "active";
-                  const isMasterAdmin = account.username === "admin";
+                  const isMasterAdmin = Boolean(account.isChief);
+                  const linkedStudent = account.studentId ? studentById.get(account.studentId) : null;
+                  // Delegated admins manage student IDs; only the chief manages other administrators.
+                  const lockedForMe = isMasterAdmin || (account.role === "admin" && !isChief);
                   const isCurrent = currentUser?.id === account.id || currentUser?.username === account.username;
 
                   return (
                     <tr
                       key={account.id}
-                      className="group transition-colors hover:bg-[#F3FAFC]/60"
+                      className="group transition-colors hover:bg-[#F7F4EE]/60"
                     >
                       {/* User Info */}
                       <td className="py-4 pl-6 pr-4">
@@ -357,23 +398,26 @@ export function Accounts() {
                           <Avatar name={account.name} size="md" />
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold text-sm text-[#17191D]">
+                              <span className="font-semibold text-sm text-[#24221F]">
                                 {account.name}
                               </span>
                               {isCurrent && (
-                                <span className="rounded-full bg-[#E6F3FC] px-2 py-0.5 text-[10px] font-bold text-[#087CC9]">
+                                <span className="rounded-full bg-[#ECEFF8] px-2 py-0.5 text-[10px] font-bold text-[#3E5BA9]">
                                   You
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="font-mono text-xs text-[#0866A8] font-medium">
+                              <span className="font-mono text-xs text-[#2F4785] font-medium">
                                 @{account.username}
                               </span>
-                              {account.studentId && (
-                                <span className="text-[11px] text-[#696B70]">
-                                  · ID: {account.studentId}
-                                </span>
+                              {linkedStudent && (
+                                <Link
+                                  to={`/students/${linkedStudent.id}`}
+                                  className="text-[11px] text-[#6F6A62] hover:text-[#3E5BA9] hover:underline"
+                                >
+                                  {linkedStudent.profileComplete ? "View profile" : "Profile pending"}
+                                </Link>
                               )}
                             </div>
                           </div>
@@ -382,13 +426,40 @@ export function Accounts() {
 
                       {/* Role */}
                       <td className="py-4 px-4">
-                        {account.role === "admin" ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#087CC9]/20 bg-[#E6F3FC] px-2.5 py-1 text-xs font-semibold text-[#0866A8]">
-                            <ShieldCheck className="size-3.5" />
-                            Administrator
+                        {account.isChief ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2A93B]/30 bg-[#FDF6E6] px-2.5 py-1 text-xs font-semibold text-[#87600F]">
+                            <Crown className="size-3.5" />
+                            Chief Administrator
                           </span>
+                        ) : account.role === "admin" ? (
+                          <div className="flex flex-col items-start gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#3E5BA9]/20 bg-[#ECEFF8] px-2.5 py-1 text-xs font-semibold text-[#2F4785]">
+                              <ShieldCheck className="size-3.5" />
+                              Administrator
+                            </span>
+                            {isChief ? (
+                              <button
+                                type="button"
+                                onClick={() => handlePermissionToggle(account)}
+                                aria-pressed={Boolean(account.canManageAccounts)}
+                                title={account.canManageAccounts ? "Remove Accounts access" : "Grant Accounts access"}
+                                className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium transition-colors cursor-pointer ${
+                                  account.canManageAccounts
+                                    ? "text-[#2F855A] hover:bg-[#E5F2E9]"
+                                    : "text-[#6F6A62] hover:bg-[#F0ECE4]"
+                                }`}
+                              >
+                                {account.canManageAccounts ? <Unlock className="size-3" /> : <Lock className="size-3" />}
+                                {account.canManageAccounts ? "Accounts access on" : "No Accounts access"}
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-[#6F6A62]">
+                                {account.canManageAccounts ? "Accounts access on" : "No Accounts access"}
+                              </span>
+                            )}
+                          </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#EDE5F7] bg-[#FAF8FE] px-2.5 py-1 text-xs font-semibold text-[#5B3E8C]">
+                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#EEE9F6] bg-[#FAF8FD] px-2.5 py-1 text-xs font-semibold text-[#5B4590]">
                             <GraduationCap className="size-3.5" />
                             Resident Student
                           </span>
@@ -398,20 +469,20 @@ export function Accounts() {
                       {/* Status */}
                       <td className="py-4 px-4">
                         {isActive ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E2F6ED] px-2.5 py-1 text-xs font-semibold text-[#16865A]">
-                            <span className="size-1.5 rounded-full bg-[#16865A]" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E5F2E9] px-2.5 py-1 text-xs font-semibold text-[#2F855A]">
+                            <span className="size-1.5 rounded-full bg-[#2F855A]" />
                             Active
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FDF2F2] px-2.5 py-1 text-xs font-semibold text-[#B43B3B]">
-                            <span className="size-1.5 rounded-full bg-[#B43B3B]" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FDF3F0] px-2.5 py-1 text-xs font-semibold text-[#B5483B]">
+                            <span className="size-1.5 rounded-full bg-[#B5483B]" />
                             Deactivated
                           </span>
                         )}
                       </td>
 
                       {/* Created Date */}
-                      <td className="py-4 px-4 hidden md:table-cell text-xs text-[#696B70]">
+                      <td className="py-4 px-4 hidden md:table-cell text-xs text-[#6F6A62]">
                         {account.createdAt ? account.createdAt.slice(0, 10) : "2026-10-01"}
                       </td>
 
@@ -422,9 +493,10 @@ export function Accounts() {
                           <button
                             type="button"
                             onClick={() => openResetModal(account)}
-                            title="Reset Password"
+                            disabled={lockedForMe && !isCurrent}
+                            title={lockedForMe && !isCurrent ? "Only the chief administrator can reset this password" : "Reset Password"}
                             aria-label={`Reset password for ${account.name}`}
-                            className="inline-flex items-center gap-1 rounded-lg border border-[#E8EDF0] bg-white px-2.5 py-1.5 text-xs font-medium text-[#17191D] hover:bg-[#F3FAFC] hover:text-[#087CC9] hover:border-[#087CC9]/30 transition-all cursor-pointer shadow-2xs"
+                            className="inline-flex items-center gap-1 rounded-lg border border-[#E8E2D7] bg-white px-2.5 py-1.5 text-xs font-medium text-[#24221F] hover:bg-[#F7F4EE] hover:text-[#3E5BA9] hover:border-[#3E5BA9]/30 transition-colors cursor-pointer shadow-2xs disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             <KeyRound className="size-3.5" />
                             <span className="hidden sm:inline">Reset</span>
@@ -434,10 +506,12 @@ export function Accounts() {
                           <button
                             type="button"
                             onClick={() => openStatusModal(account)}
-                            disabled={isMasterAdmin || isCurrent}
+                            disabled={lockedForMe || isCurrent}
                             title={
                               isMasterAdmin
-                                ? "Primary admin account cannot be deactivated"
+                                ? "The chief administrator cannot be deactivated"
+                                : lockedForMe
+                                  ? "Only the chief administrator can change administrator accounts"
                                 : isCurrent
                                   ? "Cannot deactivate your own current session"
                                   : isActive
@@ -445,12 +519,12 @@ export function Accounts() {
                                     : "Reactivate account"
                             }
                             aria-label={`${isActive ? "Deactivate" : "Activate"} account for ${account.name}`}
-                            className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all shadow-2xs ${
-                              isMasterAdmin || isCurrent
-                                ? "cursor-not-allowed border-[#E8EDF0] bg-[#F3FAFC] text-[#696B70]/40"
+                            className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors shadow-2xs ${
+                              lockedForMe || isCurrent
+                                ? "cursor-not-allowed border-[#E8E2D7] bg-[#F7F4EE] text-[#6F6A62]/40"
                                 : isActive
-                                  ? "cursor-pointer border-[#E8EDF0] bg-white text-[#B43B3B] hover:bg-[#FDF2F2] hover:border-[#B43B3B]/30"
-                                  : "cursor-pointer border-[#E8EDF0] bg-white text-[#16865A] hover:bg-[#E2F6ED] hover:border-[#16865A]/30"
+                                  ? "cursor-pointer border-[#E8E2D7] bg-white text-[#B5483B] hover:bg-[#FDF3F0] hover:border-[#B5483B]/30"
+                                  : "cursor-pointer border-[#E8E2D7] bg-white text-[#2F855A] hover:bg-[#E5F2E9] hover:border-[#2F855A]/30"
                             }`}
                           >
                             {isActive ? <UserX className="size-3.5" /> : <UserCheck className="size-3.5" />}
@@ -463,19 +537,21 @@ export function Accounts() {
                           <button
                             type="button"
                             onClick={() => openDeleteModal(account)}
-                            disabled={isMasterAdmin || isCurrent}
+                            disabled={lockedForMe || isCurrent}
                             title={
                               isMasterAdmin
-                                ? "Primary admin cannot be deleted"
+                                ? "The chief administrator cannot be deleted"
+                                : lockedForMe
+                                  ? "Only the chief administrator can delete administrator accounts"
                                 : isCurrent
                                   ? "Cannot delete current session"
                                   : "Delete account"
                             }
                             aria-label={`Delete account for ${account.name}`}
-                            className={`p-1.5 rounded-lg border border-[#E8EDF0] text-[#696B70] transition-colors shadow-2xs ${
-                              isMasterAdmin || isCurrent
-                                ? "cursor-not-allowed opacity-30 bg-[#F3FAFC]"
-                                : "cursor-pointer hover:bg-[#FDF2F2] hover:text-[#B43B3B] hover:border-[#B43B3B]/30"
+                            className={`p-1.5 rounded-lg border border-[#E8E2D7] text-[#6F6A62] transition-colors shadow-2xs ${
+                              lockedForMe || isCurrent
+                                ? "cursor-not-allowed opacity-30 bg-[#F7F4EE]"
+                                : "cursor-pointer hover:bg-[#FDF3F0] hover:text-[#B5483B] hover:border-[#B5483B]/30"
                             }`}
                           >
                             <Trash2 className="size-3.5" />
@@ -487,6 +563,16 @@ export function Accounts() {
                 })}
               </tbody>
             </table>
+            {filteredAccounts.length > visible && (
+              <div className="flex items-center justify-between gap-3 border-t border-[#E8E2D7] px-6 py-3.5 text-[13px] text-[#6F6A62]">
+                <span>
+                  Showing {visible} of {filteredAccounts.length} accounts
+                </span>
+                <Button variant="secondary" size="sm" onClick={() => setVisible((v) => v + PAGE_SIZE * 2)}>
+                  Show more
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </Card>
@@ -495,107 +581,93 @@ export function Accounts() {
       <Dialog
         open={modal?.type === "create"}
         onClose={() => setModal(null)}
-        title="Provision User Account"
-        description="Create credentials for a student resident or administrative staff member."
+        title={newRole === "student" ? "Issue a Student ID" : "Add an Administrator"}
+        description={
+          newRole === "student"
+            ? "Create the student's login. This is the only way a student is added to Haven."
+            : "Create a staff login for the warden console."
+        }
         footer={
           <>
             <Button variant="ghost" onClick={() => setModal(null)}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleCreateSubmit}>
-              Create Account
+              {newRole === "student" ? "Issue ID and Add Student" : "Create Administrator"}
             </Button>
           </>
         }
       >
         <form onSubmit={handleCreateSubmit} className="space-y-4">
           {formError && (
-            <div className="rounded-xl border border-[#B43B3B]/20 bg-[#FDF2F2] p-3 text-xs text-[#B43B3B] font-medium leading-relaxed">
+            <div className="rounded-xl border border-[#B5483B]/20 bg-[#FDF3F0] p-3 text-xs text-[#B5483B] font-medium leading-relaxed">
               {formError}
             </div>
           )}
 
-          {/* Role selector */}
-          <Field label="Account Role" required>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setNewRole("student");
-                  setNewPassword("Student@123");
-                }}
-                className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-xs font-semibold transition-all cursor-pointer ${
-                  newRole === "student"
-                    ? "border-[#087CC9] bg-[#E6F3FC] text-[#0866A8]"
-                    : "border-[#E8EDF0] bg-white text-[#696B70] hover:bg-[#F3FAFC]"
-                }`}
-              >
-                <GraduationCap className="size-4" />
-                Resident Student
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setNewRole("admin");
-                  setSelectedStudentId("");
-                  setNewPassword("Admin@123");
-                }}
-                className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-xs font-semibold transition-all cursor-pointer ${
-                  newRole === "admin"
-                    ? "border-[#087CC9] bg-[#E6F3FC] text-[#0866A8]"
-                    : "border-[#E8EDF0] bg-white text-[#696B70] hover:bg-[#F3FAFC]"
-                }`}
-              >
-                <ShieldCheck className="size-4" />
-                Administrator
-              </button>
-            </div>
-          </Field>
-
-          {/* If Student, optional selector from existing hostel directory */}
-          {newRole === "student" && (
-            <Field
-              label="Select Resident from Hostel Directory"
-              hint="Autofills resident name and ID, or enter custom details below."
-            >
-              <Select
-                value={selectedStudentId}
-                onChange={(e) => handleStudentSelect(e.target.value)}
-              >
-                <option value="">-- Choose student or type manually --</option>
-                {unlinkedStudents.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.id}) · Room {s.roomId || "Unassigned"}
-                  </option>
+          {/* Role selector (only the chief administrator can add administrators) */}
+          {isChief && (
+            <Field label="Account type" required>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  ["student", GraduationCap, "Student ID"],
+                  ["admin", ShieldCheck, "Administrator"],
+                ].map(([role, Icon, label]) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => switchRole(role)}
+                    aria-pressed={newRole === role}
+                    className={`flex items-center justify-center gap-2 rounded-xl border p-3 text-[13px] font-medium transition-colors cursor-pointer ${
+                      newRole === role
+                        ? "border-[#3E5BA9] bg-[#ECEFF8] text-[#2F4785]"
+                        : "border-[#E8E2D7] bg-white text-[#6F6A62] hover:bg-[#F7F4EE]"
+                    }`}
+                  >
+                    <Icon className="size-4" />
+                    {label}
+                  </button>
                 ))}
-              </Select>
+              </div>
             </Field>
           )}
 
+          {newRole === "student" && (
+            <div className="rounded-xl border border-[#E8E2D7] bg-[#FAF8F3] p-3.5 text-[13px] leading-relaxed text-[#58534B]">
+              Issuing an ID adds this student to the Student Directory straight away. They'll add their course,
+              contact, personal and guardian details the first time they sign in.
+            </div>
+          )}
+
           {/* Full Name */}
-          <Field label="Full Name" required>
+          <Field label={newRole === "student" ? "Student's full name" : "Full name"} required>
             <TextInput
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. Aarav Sharma"
+              placeholder={newRole === "student" ? "e.g. Aarav Sharma" : "e.g. Harjit Kaur"}
             />
           </Field>
 
-          {/* Username */}
+          {/* Username / Student ID */}
           <Field
-            label="Username / Student ID"
+            label={newRole === "student" ? "Student ID" : "Username"}
             required
-            hint="Unique identifier used for signing into the portal."
+            hint={
+              newRole === "student"
+                ? "Next free ID is filled in for you. The student signs in with it."
+                : "Used to sign in to the warden console."
+            }
           >
             <TextInput
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
-              placeholder="e.g. STU2026005 or warden.john"
+              placeholder={newRole === "student" ? "e.g. STU2026315" : "e.g. warden.harjit"}
+              className={newRole === "student" ? "font-mono" : undefined}
             />
           </Field>
 
           {/* Initial Password */}
-          <Field label="Initial Password" required>
+          <Field label="Initial password" required>
             <div className="flex gap-2">
               <TextInput
                 value={newPassword}
@@ -614,6 +686,24 @@ export function Accounts() {
               </Button>
             </div>
           </Field>
+
+          {newRole === "admin" && (
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#E8E2D7] p-3.5">
+              <input
+                type="checkbox"
+                checked={newCanManage}
+                onChange={(e) => setNewCanManage(e.target.checked)}
+                className="mt-0.5 size-4 cursor-pointer rounded accent-[#3E5BA9]"
+              />
+              <span>
+                <span className="block text-sm font-medium text-[#24221F]">Allow access to Accounts</span>
+                <span className="block text-[13px] text-[#6F6A62]">
+                  They can issue and delete student IDs and reset student passwords. Leave off for a standard
+                  administrator. You can change this later.
+                </span>
+              </span>
+            </label>
+          )}
         </form>
       </Dialog>
 
@@ -635,7 +725,7 @@ export function Accounts() {
         }
       >
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3 text-xs text-[#696B70]">
+          <div className="rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-3 text-xs text-[#6F6A62]">
             The user will be required to sign in using this new password immediately.
           </div>
 
@@ -660,7 +750,7 @@ export function Accounts() {
                 onClick={handleCopyPassword}
                 title="Copy Password"
               >
-                {copied ? <Check className="size-3.5 text-[#16865A]" /> : <Copy className="size-3.5" />}
+                {copied ? <Check className="size-3.5 text-[#2F855A]" /> : <Copy className="size-3.5" />}
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
@@ -696,7 +786,7 @@ export function Accounts() {
           </>
         }
       >
-        <p className="text-xs text-[#696B70] leading-relaxed">
+        <p className="text-xs text-[#6F6A62] leading-relaxed">
           {modal?.account?.status === "deactivated"
             ? "The user will retain all existing hostel data, room assignments, and history upon reactivation."
             : "The account credentials will be kept on file, but login attempts will be rejected with an administrative deactivation notice."}
@@ -707,21 +797,31 @@ export function Accounts() {
       <Dialog
         open={modal?.type === "delete"}
         onClose={() => setModal(null)}
-        title={`Delete Account (@${modal?.account?.username})?`}
-        description={`Are you sure you want to permanently delete the login credentials for ${modal?.account?.name}?`}
+        title={
+          modal?.account?.role === "student"
+            ? `Delete student ${modal?.account?.username}?`
+            : `Delete account @${modal?.account?.username}?`
+        }
+        description={
+          modal?.account?.role === "student"
+            ? `${modal?.account?.name}'s student ID and their record in the Student Directory will both be deleted.`
+            : `Are you sure you want to permanently delete the login for ${modal?.account?.name}?`
+        }
         footer={
           <>
             <Button variant="ghost" onClick={() => setModal(null)}>
               Cancel
             </Button>
             <Button variant="danger" onClick={handleDeleteSubmit}>
-              Delete Account
+              {modal?.account?.role === "student" ? "Delete Student" : "Delete Account"}
             </Button>
           </>
         }
       >
-        <p className="text-xs text-[#696B70] leading-relaxed">
-          This removes the user authentication profile from the system. If this is a student resident, their student record and room allocation will remain intact in the hostel directory.
+        <p className="text-xs text-[#6F6A62] leading-relaxed">
+          {modal?.account?.role === "student"
+            ? "Their bed is freed and their profile details are removed. Complaints they filed stay archived for hostel audits."
+            : "This removes the administrator's login. Hostel records they created are not affected."}
         </p>
       </Dialog>
     </Page>

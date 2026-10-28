@@ -14,9 +14,9 @@ export function useToast() {
 }
 
 const TONE_STYLES = {
-  success: { icon: CheckCircle2, bar: "bg-[#16865A]", iconCls: "text-[#16865A]", bg: "bg-[#E2F6ED]/40" },
-  error: { icon: AlertTriangle, bar: "bg-[#B43B3B]", iconCls: "text-[#B43B3B]", bg: "bg-[#FDE8E8]/40" },
-  info: { icon: Info, bar: "bg-[#087CC9]", iconCls: "text-[#087CC9]", bg: "bg-[#E6F3FC]/40" },
+  success: { icon: CheckCircle2, bar: "bg-[#2F855A]", iconCls: "text-[#2F855A]", bg: "bg-[#E5F2E9]/40" },
+  error: { icon: AlertTriangle, bar: "bg-[#B5483B]", iconCls: "text-[#B5483B]", bg: "bg-[#FBEAE6]/40" },
+  info: { icon: Info, bar: "bg-[#3E5BA9]", iconCls: "text-[#3E5BA9]", bg: "bg-[#ECEFF8]/40" },
 };
 
 function ToastCard({ item, onDismiss }) {
@@ -25,20 +25,20 @@ function ToastCard({ item, onDismiss }) {
   return (
     <div
       role="status"
-      className="pointer-events-auto flex w-full items-start gap-3 overflow-hidden rounded-xl border border-[#E8EDF0] bg-white pr-2.5 shadow-pop animate-toast-in"
+      className="pointer-events-auto flex w-full items-start gap-3 overflow-hidden rounded-xl border border-[#E8E2D7] bg-white pr-2.5 shadow-pop animate-toast-in"
     >
       <span className={cn("w-1.5 self-stretch shrink-0", style.bar)} aria-hidden="true" />
       <span className={cn("py-3", style.iconCls)} aria-hidden="true">
         <Icon className="size-5" />
       </span>
       <div className="min-w-0 flex-1 py-2.5">
-        <p className="text-sm font-bold text-[#17191D]">{item.title}</p>
-        {item.description && <p className="mt-0.5 text-xs text-[#696B70] leading-relaxed">{item.description}</p>}
+        <p className="text-sm font-bold text-[#24221F]">{item.title}</p>
+        {item.description && <p className="mt-0.5 text-xs text-[#6F6A62] leading-relaxed">{item.description}</p>}
       </div>
       <button
         onClick={() => onDismiss(item.id)}
         aria-label="Dismiss notification"
-        className="mt-2.5 rounded-lg p-1 text-[#696B70] transition-colors hover:bg-[#F3FAFC] hover:text-[#17191D]"
+        className="mt-2.5 rounded-lg p-1 text-[#6F6A62] transition-colors hover:bg-[#F7F4EE] hover:text-[#24221F]"
       >
         <X className="size-4" aria-hidden="true" />
       </button>

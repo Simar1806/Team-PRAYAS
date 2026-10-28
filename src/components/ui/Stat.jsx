@@ -3,18 +3,18 @@ import { cn } from "../../lib/cn";
 import { Card } from "./Card";
 
 const TONES = {
-  pine: "bg-[#E6F3FC] text-[#087CC9] border border-[#087CC9]/20",
-  mint: "bg-[#E2F6ED] text-[#16865A] border border-[#16865A]/20",
-  clay: "bg-[#F3E1F0] text-[#7E296A] border border-[#7E296A]/20",
-  brass: "bg-[#FEFAEB] text-[#8C6D04] border border-[#F2C316]/35",
-  lavender: "bg-[#EDE5F7] text-[#5B3A8C] border border-[#5B3A8C]/20",
-  danger: "bg-[#FDE8E8] text-[#B43B3B] border border-[#B43B3B]/20",
+  pine: "bg-[#ECEFF8] text-[#3E5BA9]",
+  mint: "bg-[#E5F2E9] text-[#2F855A]",
+  clay: "bg-[#F8E7DE] text-[#9A4A2E]",
+  brass: "bg-[#FDF6E6] text-[#87600F]",
+  lavender: "bg-[#EEE9F6] text-[#5B4590]",
+  danger: "bg-[#FBEAE6] text-[#B5483B]",
 };
 
 const TREND_STYLES = {
-  up: { icon: TrendingUp, cls: "text-[#16865A]" },
-  down: { icon: TrendingDown, cls: "text-[#B43B3B]" },
-  flat: { icon: Minus, cls: "text-[#696B70]" },
+  up: { icon: TrendingUp, cls: "text-[#2F855A]" },
+  down: { icon: TrendingDown, cls: "text-[#B5483B]" },
+  flat: { icon: Minus, cls: "text-[#6F6A62]" },
 };
 
 /**
@@ -30,30 +30,22 @@ export function Stat({ label, value, icon: Icon, trend, tone = "pine", className
   const trendStyle = trend ? TREND_STYLES[trend.direction] : null;
   const TrendIcon = trendStyle?.icon;
   return (
-    <Card hoverable className={cn("stat-card p-5 sm:p-5.5 flex flex-col justify-between", className)}>
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-[11px] font-bold tracking-[0.14em] text-[#696B70] uppercase">
-          {label}
-        </p>
-        {Icon && (
-          <span
-            className={cn(
-              "inline-flex size-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105",
-              TONES[tone] ?? TONES.pine,
-            )}
-            aria-hidden="true"
-          >
-            <Icon className="size-4.5" />
-          </span>
-        )}
-      </div>
-
-      <div className="mt-2.5">
-        <p className="font-display text-2xl sm:text-[1.85rem] font-bold tracking-tight text-[#17191D] tabular-nums">
+    <Card className={cn("stat-card flex items-start gap-4 p-5", className)}>
+      {Icon && (
+        <span
+          className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-xl", TONES[tone] ?? TONES.pine)}
+          aria-hidden="true"
+        >
+          <Icon className="size-[18px]" />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-medium text-[#6F6A62]">{label}</p>
+        <p className="mt-1 font-display text-2xl xl:text-[1.6rem] leading-tight font-semibold tracking-tight text-[#24221F] tabular-nums">
           {value}
         </p>
         {trend && TrendIcon && (
-          <p className={cn("mt-1.5 flex items-center gap-1.5 text-xs font-semibold", trendStyle.cls)}>
+          <p className={cn("mt-2.5 flex items-center gap-1.5 text-[12px] font-medium", trendStyle.cls)}>
             <TrendIcon className="size-3.5 shrink-0" aria-hidden="true" />
             <span className="truncate">{trend.text}</span>
           </p>

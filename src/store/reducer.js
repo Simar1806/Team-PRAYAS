@@ -5,11 +5,11 @@
  * Every mutating action also prepends an activity entry, so the
  * dashboard timelines stay truthful without extra dispatches.
  */
-import { buildSeedState } from "../data/seed.js";
+import { buildSeedState, formatStudentCode, STUDENT_ID_PREFIX } from "../data/seed.js";
 import { getFreeBeds, getRoom, getStudent } from "../data/selectors.js";
 
 export const STORE_KEY = "haven.hms.v1";
-export const STORE_VERSION = 1;
+export const STORE_VERSION = 2;
 
 export function createInitialState() {
   return { version: STORE_VERSION, ...buildSeedState() };
@@ -35,6 +35,37 @@ const nextStudentId = (students) => {
   );
   return `st-${String(max + 1).padStart(3, "0")}`;
 };
+
+/** Next administrator-issued student login ID, e.g. STU2026315. */
+export function nextStudentCode(state) {
+  const used = [
+    ...(state.students || []).map((s) => s.studentCode),
+    ...(state.accounts || []).map((a) => a.username),
+  ];
+  const max = used.reduce((m, code) => {
+    if (!code || !String(code).toUpperCase().startsWith(STUDENT_ID_PREFIX)) return m;
+    const n = parseInt(String(code).slice(STUDENT_ID_PREFIX.length), 10);
+    return Number.isFinite(n) ? Math.max(m, n) : m;
+  }, 0);
+  return formatStudentCode(max + 1);
+}
+
+const PROFILE_FIELDS = ["phone", "email", "dob", "bloodGroup", "address", "guardianName", "guardianPhone"];
+
+function removeStudentRecord(state, student) {
+  let rooms = state.rooms;
+  if (student.roomId) {
+    rooms = rooms.map((r) =>
+      r.id === student.roomId ? { ...r, occupantIds: r.occupantIds.filter((oid) => oid !== student.id) } : r,
+    );
+  }
+  return {
+    ...state,
+    rooms,
+    students: state.students.filter((s) => s.id !== student.id),
+    accounts: (state.accounts || []).filter((a) => a.studentId !== student.id),
+  };
+}
 
 /* ---------- activity ---------- */
 
@@ -62,56 +93,43 @@ function closeOpenHistory(student, at) {
 
 export function havenReducer(state, action) {
   switch (action.type) {
-    case "ADD_STUDENT": {
-      const d = action.student || {};
-      if (!d.name?.trim() || !d.course?.trim()) return state;
-      const student = {
-        id: nextStudentId(state.students),
-        name: d.name.trim(),
-        course: d.course.trim(),
-        year: Math.min(5, Math.max(1, Number(d.year) || 1)),
-        phone: (d.phone || "").trim(),
-        block: null,
-        roomId: null,
-        bed: null,
-        roomHistory: [],
-      };
-      const next = { ...state, students: [...state.students, student] };
-      return withActivity(next, "Admin", `Added student ${student.name} (${student.id}).`, "room");
-    }
-
     case "UPDATE_STUDENT": {
-      const { id, patch = {} } = action;
-      if (!getStudent(state.students, id)) return state;
-      const students = state.students.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              name: (patch.name ?? s.name).trim() || s.name,
-              course: (patch.course ?? s.course).trim() || s.course,
-              year: Math.min(5, Math.max(1, Number(patch.year ?? s.year) || s.year)),
-              phone: (patch.phone ?? s.phone ?? "").trim(),
-            }
-          : s,
+      const { id, patch = {}, markComplete = false } = action;
+      const current = getStudent(state.students, id);
+      if (!current) return state;
+      const updated = {
+        ...current,
+        name: (patch.name ?? current.name).trim() || current.name,
+        course: (patch.course ?? current.course ?? "").trim() || current.course,
+        year:
+          patch.year != null
+            ? Math.min(5, Math.max(1, Number(patch.year) || current.year || 1))
+            : current.year,
+      };
+      for (const key of PROFILE_FIELDS) {
+        if (patch[key] !== undefined) updated[key] = String(patch[key] ?? "").trim();
+      }
+      if (markComplete) updated.profileComplete = true;
+      const students = state.students.map((s) => (s.id === id ? updated : s));
+      const accounts = (state.accounts || []).map((a) =>
+        a.studentId === id && a.name !== updated.name ? { ...a, name: updated.name } : a,
       );
-      return { ...state, students };
+      const next = { ...state, students, accounts };
+      return markComplete && !current.profileComplete
+        ? withActivity(next, updated.name, `Completed their resident profile (${updated.studentCode}).`, "room")
+        : next;
     }
 
     case "REMOVE_STUDENT": {
       const student = getStudent(state.students, action.id);
       if (!student) return state;
-      let rooms = state.rooms;
-      if (student.roomId) {
-        rooms = rooms.map((r) =>
-          r.id === student.roomId ? { ...r, occupantIds: r.occupantIds.filter((oid) => oid !== student.id) } : r,
-        );
-      }
-      const next = {
-        ...state,
-        rooms,
-        students: state.students.filter((s) => s.id !== student.id),
-      };
-      return withActivity(next, "Admin", `Removed student ${student.name} (${student.id}).`, "room");
+      const next = removeStudentRecord(state, student);
+      return withActivity(
+        next,
+        "Admin",
+        `Removed student ${student.name} and login ID ${student.studentCode || student.id}.`,
+        "room",
+      );
     }
 
     case "ALLOCATE_BED": {
@@ -258,29 +276,81 @@ export function havenReducer(state, action) {
     }
 
     case "ADD_ACCOUNT": {
-      const d = action.account;
+      const d = action.account || {};
       if (!d.username?.trim() || !d.password?.trim() || !d.name?.trim()) return state;
       const cleanUsername = d.username.trim();
       const accounts = state.accounts || [];
       if (accounts.some((a) => a.username.toLowerCase() === cleanUsername.toLowerCase())) {
         return state;
       }
+      const isStudent = d.role !== "admin";
+      let next = state;
+      let studentId = null;
+
+      // Issuing a student login ID is the ONLY way a student enters the
+      // directory. The record starts with just name + ID; the resident fills
+      // in the remaining sections on first sign-in.
+      if (isStudent) {
+        studentId = nextStudentId(state.students);
+        const student = {
+          id: studentId,
+          studentCode: cleanUsername,
+          name: d.name.trim(),
+          course: null,
+          year: null,
+          phone: "",
+          email: "",
+          dob: "",
+          bloodGroup: "",
+          address: "",
+          guardianName: "",
+          guardianPhone: "",
+          profileComplete: false,
+          block: null,
+          roomId: null,
+          bed: null,
+          roomHistory: [],
+        };
+        next = { ...next, students: [...next.students, student] };
+      }
+
       const account = {
         id: nextAccountId(accounts),
         username: cleanUsername,
         password: d.password,
         name: d.name.trim(),
-        role: d.role === "admin" ? "admin" : "student",
-        studentId: d.studentId || null,
+        role: isStudent ? "student" : "admin",
+        isChief: false,
+        canManageAccounts: !isStudent && Boolean(d.canManageAccounts),
+        studentId,
         status: "active",
         createdAt: new Date().toISOString(),
         lastLogin: null,
       };
-      const next = { ...state, accounts: [account, ...accounts] };
+      next = { ...next, accounts: [account, ...accounts] };
       return withActivity(
         next,
         "Admin",
-        `Created ${account.role} account for ${account.name} (${account.username}).`,
+        isStudent
+          ? `Issued student ID ${account.username} to ${account.name}.`
+          : `Created administrator account for ${account.name} (${account.username}).`,
+        "maintenance",
+      );
+    }
+
+    case "SET_ACCOUNT_PERMISSION": {
+      const { accountId, canManageAccounts } = action;
+      const accounts = state.accounts || [];
+      const target = accounts.find((a) => a.id === accountId);
+      if (!target || target.role !== "admin" || target.isChief) return state;
+      const next = {
+        ...state,
+        accounts: accounts.map((a) => (a.id === accountId ? { ...a, canManageAccounts: Boolean(canManageAccounts) } : a)),
+      };
+      return withActivity(
+        next,
+        "Admin",
+        `${canManageAccounts ? "Granted" : "Revoked"} account-management access for ${target.name}.`,
         "maintenance",
       );
     }
@@ -289,7 +359,7 @@ export function havenReducer(state, action) {
       const { accountId, status } = action;
       const accounts = state.accounts || [];
       const target = accounts.find((a) => a.id === accountId);
-      if (!target) return state;
+      if (!target || target.isChief) return state;
       const next = {
         ...state,
         accounts: accounts.map((a) => (a.id === accountId ? { ...a, status } : a)),
@@ -323,15 +393,17 @@ export function havenReducer(state, action) {
       const { accountId } = action;
       const accounts = state.accounts || [];
       const target = accounts.find((a) => a.id === accountId);
-      if (!target || target.username === "admin") return state; // Never delete default admin
-      const next = {
-        ...state,
-        accounts: accounts.filter((a) => a.id !== accountId),
-      };
+      if (!target || target.isChief) return state; // The chief administrator can never be deleted
+      const student = target.studentId ? getStudent(state.students, target.studentId) : null;
+      const next = student
+        ? removeStudentRecord(state, student)
+        : { ...state, accounts: accounts.filter((a) => a.id !== accountId) };
       return withActivity(
         next,
         "Admin",
-        `Removed account ${target.username}.`,
+        student
+          ? `Removed student ${student.name} and login ID ${target.username}.`
+          : `Removed account ${target.username}.`,
         "maintenance",
       );
     }
@@ -347,8 +419,7 @@ export function havenReducer(state, action) {
 /* ---------- action creators ---------- */
 
 export const actions = {
-  addStudent: (student) => ({ type: "ADD_STUDENT", student }),
-  updateStudent: (id, patch) => ({ type: "UPDATE_STUDENT", id, patch }),
+  updateStudent: (id, patch, markComplete = false) => ({ type: "UPDATE_STUDENT", id, patch, markComplete }),
   removeStudent: (id) => ({ type: "REMOVE_STUDENT", id }),
   allocateBed: (studentId, roomId) => ({ type: "ALLOCATE_BED", studentId, roomId }),
   reassignBed: (studentId, roomId) => ({ type: "REASSIGN_BED", studentId, roomId }),
@@ -362,5 +433,6 @@ export const actions = {
   updateAccountStatus: (accountId, status) => ({ type: "UPDATE_ACCOUNT_STATUS", accountId, status }),
   resetAccountPassword: (accountId, newPassword) => ({ type: "RESET_ACCOUNT_PASSWORD", accountId, newPassword }),
   removeAccount: (accountId) => ({ type: "REMOVE_ACCOUNT", accountId }),
+  setAccountPermission: (accountId, canManageAccounts) => ({ type: "SET_ACCOUNT_PERMISSION", accountId, canManageAccounts }),
   resetDemo: () => ({ type: "RESET_DEMO" }),
 };

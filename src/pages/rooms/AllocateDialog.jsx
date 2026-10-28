@@ -13,7 +13,7 @@ import {
 } from "../../components/ui/index.js";
 import { useHaven } from "../../store/havenStore.jsx";
 import { actions } from "../../store/reducer.js";
-import { getFreeBeds, getRoomFree, getUnallocatedStudents, searchStudents } from "../../data/selectors.js";
+import { academicLine, getFreeBeds, getRoomFree, getUnallocatedStudents, searchStudents } from "../../data/selectors.js";
 
 /**
  * Allocate or reassign a bed.
@@ -97,16 +97,16 @@ export function AllocateDialog({ open, onClose, student, room }) {
         <div className="flex flex-wrap gap-3">
           {mode === "pick-room" && (
             <div>
-              <p className="text-[11px] font-bold tracking-[0.08em] text-[#17191D] uppercase mb-1.5">Block</p>
-              <div className="inline-flex rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-1" role="group" aria-label="Block filter">
+              <p className="text-[13px] font-medium text-[#24221F] mb-1.5">Block</p>
+              <div className="inline-flex rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-1" role="group" aria-label="Block filter">
                 {["all", "A", "B", "C", "D"].map((b) => (
                   <button
                     key={b}
                     type="button"
                     onClick={() => setBlock(b)}
                     aria-pressed={block === b}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
-                      block === b ? "bg-[#087CC9] text-white shadow-xs" : "text-[#696B70] hover:text-[#0866A8]"
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors cursor-pointer ${
+                      block === b ? "bg-[#3E5BA9] text-white shadow-xs" : "text-[#6F6A62] hover:text-[#2F4785]"
                     }`}
                   >
                     {b === "all" ? "All" : b}
@@ -117,7 +117,7 @@ export function AllocateDialog({ open, onClose, student, room }) {
           )}
           <Field label={mode === "pick-room" ? "Search Available Rooms" : "Search Unallocated Students"} className="min-w-48 flex-1">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#696B70]" aria-hidden="true" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6F6A62]" aria-hidden="true" />
               <TextInput
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -143,18 +143,18 @@ export function AllocateDialog({ open, onClose, student, room }) {
                   role="option"
                   aria-selected={selected}
                   onClick={() => setPickedRoomId(selected ? null : r.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors cursor-pointer ${
                     selected
-                      ? "border-[#087CC9] bg-[#E6F3FC] ring-2 ring-[#087CC9]/20"
-                      : "border-[#E8EDF0] bg-white hover:border-[#087CC9]/40 hover:bg-[#F3FAFC]"
+                      ? "border-[#3E5BA9] bg-[#ECEFF8] ring-2 ring-[#3E5BA9]/20"
+                      : "border-[#E8E2D7] bg-white hover:border-[#3E5BA9]/40 hover:bg-[#F7F4EE]"
                   }`}
                 >
-                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-white border border-[#E8EDF0] text-[#087CC9]" aria-hidden="true">
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-white border border-[#E8E2D7] text-[#3E5BA9]" aria-hidden="true">
                     <BedDouble className="size-4.5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-bold text-sm text-[#17191D]">{r.id}</span>
-                    <span className="block text-xs text-[#696B70]">
+                    <span className="block font-bold text-sm text-[#24221F]">{r.id}</span>
+                    <span className="block text-xs text-[#6F6A62]">
                       Block {r.block} · Floor {r.floor} · <strong>{free.length} of {r.capacity}</strong> beds free
                     </span>
                     <ProgressBar value={pct} className="mt-1.5 max-w-44" />
@@ -173,16 +173,16 @@ export function AllocateDialog({ open, onClose, student, room }) {
                   role="option"
                   aria-selected={selected}
                   onClick={() => setPickedStudentId(selected ? null : s.id)}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors cursor-pointer ${
                     selected
-                      ? "border-[#087CC9] bg-[#E6F3FC] ring-2 ring-[#087CC9]/20"
-                      : "border-[#E8EDF0] bg-white hover:border-[#087CC9]/40 hover:bg-[#F3FAFC]"
+                      ? "border-[#3E5BA9] bg-[#ECEFF8] ring-2 ring-[#3E5BA9]/20"
+                      : "border-[#E8E2D7] bg-white hover:border-[#3E5BA9]/40 hover:bg-[#F7F4EE]"
                   }`}
                 >
                   <Avatar name={s.name} size="sm" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-bold text-sm text-[#17191D]">{s.name}</span>
-                    <span className="block text-xs text-[#696B70]">{s.course} · Year {s.year}</span>
+                    <span className="block truncate font-bold text-sm text-[#24221F]">{s.name}</span>
+                    <span className="block text-xs text-[#6F6A62]">{academicLine(s)}</span>
                   </span>
                   {selected && <Badge tone="pine">Selected</Badge>}
                 </button>
@@ -201,7 +201,7 @@ export function AllocateDialog({ open, onClose, student, room }) {
           )}
         </div>
 
-        <div className="flex justify-end gap-2.5 border-t border-[#E8EDF0] pt-4">
+        <div className="flex justify-end gap-2.5 border-t border-[#E8E2D7] pt-4">
           <Button variant="ghost" onClick={handleClose}>
             Cancel
           </Button>

@@ -39,7 +39,12 @@ export function ViewProvider({ children }) {
         /* ignore */
       }
       setUser(null);
-    } else if (matched.name !== user.name || matched.role !== user.role || matched.password !== user.password) {
+    } else if (
+      matched.name !== user.name ||
+      matched.role !== user.role ||
+      matched.password !== user.password ||
+      matched.studentId !== user.studentId
+    ) {
       // Keep session updated with any admin changes to name or role
       const updated = {
         ...user,
@@ -121,6 +126,13 @@ export function ViewProvider({ children }) {
     setUser(null);
   }, []);
 
+  // Permissions are always read from the live account record, so a grant or
+  // revoke by the chief administrator applies to an open session immediately.
+  const liveAccount = useMemo(() => {
+    if (!user) return null;
+    return (state.accounts || []).find((a) => a.id === user.id) || null;
+  }, [state.accounts, user]);
+
   const value = useMemo(
     () => ({
       user,
@@ -128,10 +140,13 @@ export function ViewProvider({ children }) {
       role: user ? user.role : null,
       studentId: user?.studentId || (user?.role === "student" ? DEMO_STUDENT_ID : null),
       isAdmin: user?.role === "admin",
+      isChief: Boolean(liveAccount?.isChief),
+      canManageAccounts:
+        liveAccount?.role === "admin" && Boolean(liveAccount?.isChief || liveAccount?.canManageAccounts),
       login,
       logout,
     }),
-    [user, login, logout],
+    [user, liveAccount, login, logout],
   );
 
   return <ViewContext.Provider value={value}>{children}</ViewContext.Provider>;

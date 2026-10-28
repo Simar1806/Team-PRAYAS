@@ -1,15 +1,17 @@
-import { LogOut, Menu, ShieldCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, ShieldCheck } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useView } from "../../state/demo.jsx";
 import { useHaven } from "../../store/havenStore.jsx";
 import { getStudent } from "../../data/selectors.js";
 import { Avatar } from "../ui/Avatar.jsx";
 import { Logo } from "./Logo.jsx";
+import { getNavItems } from "./nav.js";
 
-export function TopBar({ onOpenMenu }) {
-  const { role, user, logout, studentId } = useView();
+export function TopBar({ onOpenMenu, collapsed = false, onToggleSidebar }) {
+  const { role, user, logout, studentId, canManageAccounts, isChief } = useView();
   const { state } = useHaven();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const student = getStudent(state.students, studentId);
 
@@ -20,75 +22,81 @@ export function TopBar({ onOpenMenu }) {
 
   const displayName = user?.name || (role === "admin" ? "Chief Warden" : student?.name || "Resident");
 
+  const section = "/" + (pathname.split("/")[1] || "");
+  const current = getNavItems(role, { canManageAccounts }).find((item) => item.to === section);
+
   return (
-    <header className="top-bar sticky top-0 z-30 border-b border-[#E8EDF0] bg-white/90 backdrop-blur-md">
-      <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:h-[4.5rem] lg:px-8">
-        {/* Left: Mobile hamburger + logo / Desktop title */}
-        <div className="flex items-center gap-3">
+    <header className="top-bar sticky top-0 z-30">
+      <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             onClick={onOpenMenu}
             aria-label="Open navigation menu"
             aria-controls="mobile-nav"
-            className="rounded-lg p-2 text-[#17191D] transition-colors hover:bg-[#F3FAFC] active:bg-[#EBF4F8] lg:hidden"
+            className="rounded-lg p-2 text-[#24221F] transition-colors hover:bg-[#F0ECE4] lg:hidden"
           >
             <Menu className="size-5" aria-hidden="true" />
           </button>
           <div className="lg:hidden">
             <Logo compact />
           </div>
-          <div className="hidden min-w-0 lg:block">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold tracking-[0.16em] text-[#696B70] uppercase">
-                {role === "admin" ? "Administrative View" : "Resident Portal"}
+
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-pressed={collapsed}
+            className="hidden rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#F0ECE4] hover:text-[#24221F] lg:inline-flex"
+          >
+            {collapsed ? <PanelLeftOpen className="size-[18px]" /> : <PanelLeftClose className="size-[18px]" />}
+          </button>
+
+          <div className="hidden h-5 w-px bg-[#E8E2D7] lg:block" aria-hidden="true" />
+
+          <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-[13px] lg:flex">
+            <span className="text-[#A39D92]">{role === "admin" ? "Warden Console" : "Resident Portal"}</span>
+            <span className="text-[#DCD4C6]">/</span>
+            <span className="truncate font-medium text-[#24221F]">{current?.label || "Overview"}</span>
+            {role !== "admin" && student && (
+              <span className="ml-2 rounded-md bg-[#F0ECE4] px-2 py-0.5 text-[12px] text-[#6F6A62]">
+                {student.roomId ? `Block ${student.block} · Room ${student.roomId}` : "Room not yet allotted"}
               </span>
-              <span className="size-1 rounded-full bg-[#E8EDF0]" />
-              <span className="text-xs font-medium text-[#696B70]">
-                {role === "admin"
-                  ? "Warden Console · Full Access"
-                  : `Block ${student?.block || "A"} · Room ${student?.roomId || "101"}`}
-              </span>
-            </div>
-          </div>
+            )}
+          </nav>
         </div>
 
-        {/* Right: Authenticated User Profile & Logout */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* User profile indicator */}
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-[#E8EDF0] bg-[#F3FAFC]">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2.5">
             {role === "admin" ? (
-              <span className="inline-flex size-7 sm:size-8 items-center justify-center rounded-lg bg-[#E6F3FC] text-[#0866A8] font-bold text-xs shrink-0">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[#ECEFF8] text-[#2F4785]">
                 <ShieldCheck className="size-4" />
               </span>
             ) : (
               <Avatar name={displayName} size="sm" />
             )}
-            <div className="min-w-0 text-left">
-              <p className="truncate text-xs font-semibold text-[#17191D] max-w-[120px] sm:max-w-[160px]">
+            <div className="hidden min-w-0 text-left sm:block">
+              <p className="max-w-[160px] truncate text-[13px] font-semibold leading-tight text-[#24221F]">
                 {displayName}
               </p>
-              <div className="flex items-center gap-1.5">
-                <span className="inline-block text-[10px] font-semibold text-[#087CC9] uppercase tracking-wide">
-                  {role === "admin" ? "Administrator" : "Resident"}
-                </span>
-                {user?.username && (
-                  <span className="hidden sm:inline text-[10px] text-[#696B70] font-mono">
-                    (@{user.username})
-                  </span>
-                )}
-              </div>
+              <p className="text-[11px] leading-tight text-[#6F6A62]">
+                {role === "admin" ? (isChief ? "Chief Administrator" : "Administrator") : "Resident"}
+                {user?.username && <span className="text-[#A39D92]"> · @{user.username}</span>}
+              </p>
             </div>
           </div>
 
-          {/* Logout Button */}
+          <div className="mx-1 hidden h-6 w-px bg-[#E8E2D7] sm:block" aria-hidden="true" />
+
           <button
             type="button"
             onClick={handleLogout}
             title="Sign out of account"
             aria-label="Sign out"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E8EDF0] bg-white px-3 py-2 text-xs font-semibold text-[#696B70] hover:text-[#B43B3B] hover:border-[#B43B3B]/30 hover:bg-[#FDF2F2] transition-all cursor-pointer shadow-2xs"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-[#6F6A62] transition-colors hover:bg-[#FDF3F0] hover:text-[#B5483B]"
           >
-            <LogOut className="size-3.5" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <LogOut className="size-4" />
+            <span className="hidden sm:inline">Sign out</span>
           </button>
         </div>
       </div>

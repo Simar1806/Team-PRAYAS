@@ -2,24 +2,19 @@ import { Loader2 } from "lucide-react";
 import { cn } from "../../lib/cn";
 
 const VARIANTS = {
-  primary:
-    "bg-[#087CC9] text-white shadow-xs shadow-[#087CC9]/20 hover:bg-[#0866A8] hover:-translate-y-px hover:shadow-md hover:shadow-[#087CC9]/25 active:translate-y-0 active:bg-[#054D80]",
+  primary: "bg-[#3E5BA9] text-white hover:bg-[#2F4785] active:bg-[#24376A]",
   secondary:
-    "bg-white text-[#17191D] border border-[#E8EDF0] shadow-xs hover:border-[#087CC9] hover:bg-[#F3FAFC] hover:text-[#0866A8] hover:-translate-y-px hover:shadow-xs active:translate-y-0 active:bg-[#EBF4F8]",
-  ghost:
-    "text-[#696B70] hover:text-[#087CC9] hover:bg-[#E6F3FC] active:bg-[#D2EAF8]",
-  danger:
-    "bg-[#B43B3B] text-white shadow-xs shadow-[#B43B3B]/20 hover:bg-[#962E2E] hover:-translate-y-px hover:shadow-md hover:shadow-[#B43B3B]/25 active:translate-y-0",
-  mint:
-    "bg-[#16865A] text-white shadow-xs hover:bg-[#126E4A] hover:-translate-y-px active:translate-y-0",
-  lavender:
-    "bg-[#EDE5F7] text-[#5B3A8C] hover:bg-[#E1D4F2] hover:-translate-y-px active:translate-y-0",
+    "bg-white text-[#24221F] border border-[#E8E2D7] hover:border-[#DCD4C6] hover:bg-[#FAF8F3] active:bg-[#F0ECE4]",
+  ghost: "text-[#6F6A62] hover:text-[#24221F] hover:bg-[#F0ECE4] active:bg-[#E8E2D7]",
+  danger: "bg-[#B5483B] text-white hover:bg-[#953A2F]",
+  mint: "bg-[#2F855A] text-white hover:bg-[#256D49]",
+  lavender: "bg-[#EEE9F6] text-[#5B4590] hover:bg-[#E2D9F0]",
 };
 
 const SIZES = {
-  sm: "h-8.5 px-3 text-xs gap-1.5 rounded-lg",
-  md: "h-10 px-4 text-sm gap-2 rounded-xl",
-  lg: "h-11.5 px-5 text-sm gap-2.5 rounded-xl font-bold",
+  sm: "h-8.5 px-3 text-[13px] gap-1.5 rounded-lg",
+  md: "h-10 px-4 text-sm gap-2 rounded-lg",
+  lg: "h-11 px-5 text-sm gap-2 rounded-xl",
 };
 
 /**
@@ -53,8 +48,8 @@ export function Button({
       disabled={isDisabled}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex cursor-pointer items-center justify-center font-semibold whitespace-nowrap transition-all duration-150 select-none",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#087CC9] focus-visible:ring-offset-2",
+        "inline-flex cursor-pointer items-center justify-center font-medium whitespace-nowrap transition-colors duration-150 select-none",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E5BA9] focus-visible:ring-offset-2",
         "disabled:pointer-events-none disabled:opacity-50",
         VARIANTS[variant],
         SIZES[size],

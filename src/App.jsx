@@ -42,6 +42,22 @@ function AdminRoute({ children }) {
   return children;
 }
 
+/** Accounts are limited to the chief administrator and admins granted access */
+function AccountsRoute({ children }) {
+  const { isAuthenticated, canManageAccounts } = useView();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!canManageAccounts) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 export default function App() {
   return (
     <HavenProvider>
@@ -84,9 +100,9 @@ export default function App() {
                 <Route
                   path="accounts"
                   element={
-                    <AdminRoute>
+                    <AccountsRoute>
                       <Accounts />
-                    </AdminRoute>
+                    </AccountsRoute>
                   }
                 />
                 <Route path="*" element={<NotFound />} />

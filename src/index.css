@@ -2,90 +2,90 @@
 
 /* Haven Hostel Management System — Classic, Elegant & Premium Design System
    Exact Specified Color Palette:
-   - Primary blue:    #087CC9
-   - Deep blue:       #0866A8
-   - Page background: #F3FAFC
+   - Primary blue:    #3E5BA9
+   - Deep blue:       #2F4785
+   - Page background: #F7F4EE
    - Card surface:    #FFFFFF
-   - Lavender accent: #EDE5F7
-   - Pink accent:     #F3E1F0
-   - Success green:   #16865A
-   - Alert red:       #B43B3B
-   - Main text:       #17191D
-   - Secondary text:  #696B70
-   - Border:          #E8EDF0
-   - Premium gold:    #F2C316
+   - Lavender accent: #EEE9F6
+   - Pink accent:     #F8E7DE
+   - Success green:   #2F855A
+   - Alert red:       #B5483B
+   - Main text:       #24221F
+   - Secondary text:  #6F6A62
+   - Border:          #E8E2D7
+   - Premium gold:    #E2A93B
 */
 @theme {
-  --font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", Georgia, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   /* Explicit Palette Tokens */
-  --color-primary-blue: #087CC9;
-  --color-deep-blue: #0866A8;
-  --color-page: #F3FAFC;
+  --color-primary-blue: #3E5BA9;
+  --color-deep-blue: #2F4785;
+  --color-page: #F7F4EE;
   --color-card: #FFFFFF;
-  --color-lavender: #EDE5F7;
-  --color-pink: #F3E1F0;
-  --color-success: #16865A;
-  --color-alert: #B43B3B;
-  --color-main-text: #17191D;
-  --color-secondary-text: #696B70;
-  --color-border: #E8EDF0;
-  --color-gold: #F2C316;
+  --color-lavender: #EEE9F6;
+  --color-pink: #F8E7DE;
+  --color-success: #2F855A;
+  --color-alert: #B5483B;
+  --color-main-text: #24221F;
+  --color-secondary-text: #6F6A62;
+  --color-border: #E8E2D7;
+  --color-gold: #E2A93B;
 
   /* Preserved Semantic Tokens mapped directly to the Palette */
-  --color-paper: #F3FAFC;
+  --color-paper: #F7F4EE;
   --color-cream: #FFFFFF;
-  --color-sand-50: #F3FAFC;
-  --color-sand-100: #EBF4F8;
-  --color-sand-200: #E8EDF0;
-  --color-sand-300: #DCE5EB;
+  --color-sand-50: #F7F4EE;
+  --color-sand-100: #F0ECE4;
+  --color-sand-200: #E8E2D7;
+  --color-sand-300: #DCD4C6;
 
-  --color-ink-950: #0E1013;
-  --color-ink-900: #17191D;
-  --color-ink-700: #383B40;
-  --color-ink-600: #52555B;
-  --color-ink-500: #696B70;
-  --color-ink-400: #93969C;
+  --color-ink-950: #1A1815;
+  --color-ink-900: #24221F;
+  --color-ink-700: #3B3732;
+  --color-ink-600: #58534B;
+  --color-ink-500: #6F6A62;
+  --color-ink-400: #A39D92;
 
-  --color-pine-950: #042D4B;
-  --color-pine-900: #0866A8;
-  --color-pine-800: #0874BD;
-  --color-pine-700: #087CC9;
-  --color-pine-600: #0A8CE2;
-  --color-pine-500: #2CA3EE;
-  --color-pine-300: #93CEF5;
-  --color-pine-200: #C2E3FA;
-  --color-pine-100: #E3F2FC;
-  --color-pine-50: #F3FAFC;
+  --color-pine-950: #1C2742;
+  --color-pine-900: #2F4785;
+  --color-pine-800: #3851A0;
+  --color-pine-700: #3E5BA9;
+  --color-pine-600: #5470BE;
+  --color-pine-500: #7088CC;
+  --color-pine-300: #A9B8E0;
+  --color-pine-200: #D3DCF0;
+  --color-pine-100: #ECEFF8;
+  --color-pine-50: #F7F4EE;
 
-  --color-mint-400: #16865A;
-  --color-mint-300: #1BA06B;
-  --color-mint-200: #C2EAD9;
-  --color-mint-100: #E2F6ED;
-  --color-mint-50: #F0FAF5;
+  --color-mint-400: #2F855A;
+  --color-mint-300: #3A9A68;
+  --color-mint-200: #C8E3D1;
+  --color-mint-100: #E5F2E9;
+  --color-mint-50: #F2F8F3;
 
-  --color-clay-700: #7E296A;
-  --color-clay-600: #A23A89;
-  --color-clay-500: #BD53A4;
-  --color-clay-100: #F3E1F0;
-  --color-clay-50: #FAF2F9;
+  --color-clay-700: #9A4A2E;
+  --color-clay-600: #B65C3B;
+  --color-clay-500: #C9774F;
+  --color-clay-100: #F8E7DE;
+  --color-clay-50: #FCF4EF;
 
-  --color-brass-700: #8C6D04;
-  --color-brass-600: #C2990B;
-  --color-brass-100: #FDF1BF;
-  --color-brass-50: #FEFAEB;
+  --color-brass-700: #87600F;
+  --color-brass-600: #B9862A;
+  --color-brass-100: #F8E7BE;
+  --color-brass-50: #FDF6E6;
 
-  --color-danger-700: #962E2E;
-  --color-danger-600: #B43B3B;
-  --color-danger-300: #ECA3A3;
-  --color-danger-200: #F6CCCC;
-  --color-danger-100: #FDE8E8;
-  --color-danger-50: #FEF4F4;
+  --color-danger-700: #953A2F;
+  --color-danger-600: #B5483B;
+  --color-danger-300: #E5A99D;
+  --color-danger-200: #F2CFC7;
+  --color-danger-100: #FBEAE6;
+  --color-danger-50: #FEF6F4;
 
-  --shadow-card: 0 1px 3px 0 rgb(23 25 29 / 0.03), 0 3px 12px -2px rgb(8 102 168 / 0.05);
-  --shadow-card-hover: 0 4px 6px -1px rgb(8 102 168 / 0.05), 0 12px 24px -4px rgb(8 102 168 / 0.1);
-  --shadow-pop: 0 20px 40px -15px rgb(8 102 168 / 0.16), 0 8px 16px -8px rgb(8 102 168 / 0.08);
+  --shadow-card: 0 1px 2px 0 rgb(36 34 31 / 0.04);
+  --shadow-card-hover: 0 2px 4px -1px rgb(36 34 31 / 0.05), 0 8px 20px -6px rgb(36 34 31 / 0.08);
+  --shadow-pop: 0 20px 40px -15px rgb(47 71 133 / 0.16), 0 8px 16px -8px rgb(47 71 133 / 0.08);
 
   --animate-toast-in: toast-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fade-in: fade-in 0.2s ease-out;
@@ -118,8 +118,8 @@
   html { scroll-behavior: smooth; }
 
   body {
-    background-color: #F3FAFC;
-    color: #17191D;
+    background-color: #F7F4EE;
+    color: #24221F;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -131,19 +131,19 @@
     z-index: -2;
     content: "";
     background:
-      radial-gradient(circle at 88% 2%, rgb(8 124 201 / 0.035), transparent 32rem),
-      radial-gradient(circle at 12% 95%, rgb(237 229 247 / 0.45), transparent 30rem),
-      #F3FAFC;
+      radial-gradient(circle at 92% 0%, rgb(62 91 169 / 0.06), transparent 34rem),
+      radial-gradient(circle at 8% 100%, rgb(226 169 59 / 0.07), transparent 30rem),
+      #F7F4EE;
     pointer-events: none;
   }
 
   ::selection {
-    background: #CBE6FA;
-    color: #0866A8;
+    background: #D6DEF2;
+    color: #2F4785;
   }
 
   :focus-visible {
-    outline: 2px solid #087CC9;
+    outline: 2px solid #3E5BA9;
     outline-offset: 2px;
     border-radius: 8px;
   }
@@ -153,41 +153,51 @@
   }
 }
 
+@layer base {
+  .font-display {
+    font-optical-sizing: auto;
+    font-variation-settings: "SOFT" 50;
+  }
+  h1, h2, h3 { text-wrap: balance; }
+}
+
 @layer components {
   .app-shell {
     position: relative;
     isolation: isolate;
     overflow-x: clip;
-    background-color: #F3FAFC;
+    background-color: #F7F4EE;
   }
 
   .sidebar-surface {
-    background: #FFFFFF;
-    border-right: 1px solid #E8EDF0;
-    box-shadow: 2px 0 16px -8px rgb(8 102 168 / 0.05);
+    color: #E9ECF3;
+    background:
+      radial-gradient(120% 60% at 0% 0%, rgb(74 102 181 / 0.22), transparent 60%),
+      linear-gradient(180deg, #202A40 0%, #1A2235 100%);
+    border-right: 1px solid rgb(255 255 255 / 0.04);
+    box-shadow: 4px 0 24px -12px rgb(26 34 53 / 0.35);
   }
 
   .top-bar {
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid #E8EDF0;
-    box-shadow: 0 2px 12px -6px rgb(8 102 168 / 0.04);
+    background: rgba(247, 244, 238, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #E8E2D7;
   }
 
   .role-switcher {
-    background: #F3FAFC;
-    border: 1px solid #E8EDF0;
+    background: #F7F4EE;
+    border: 1px solid #E8E2D7;
   }
 
   .page-header {
     position: relative;
-    animation: rise-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+    
   }
 
   .page-header h1 {
     font-family: var(--font-display);
-    letter-spacing: -0.035em;
-    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-weight: 600;
   }
 
   .page-eyebrow {
@@ -197,43 +207,43 @@
     font-weight: 700;
   }
 
-  .page-eyebrow::before {
-    width: 1rem;
-    height: 2px;
-    border-radius: 9999px;
-    content: "";
-    background: #087CC9;
-  }
+
 
   .haven-card {
     position: relative;
-    border-radius: 1rem;
-    border: 1px solid #E8EDF0;
+    border-radius: 1.125rem;
+    border: 1px solid #E8E2D7;
     background: #FFFFFF;
     box-shadow: var(--shadow-card);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .haven-card.is-hoverable:hover {
-    border-color: rgb(8 124 201 / 0.35);
+    border-color: #DCD4C6;
     box-shadow: var(--shadow-card-hover);
-    transform: translateY(-2px);
   }
 
-  .stat-card {
-    min-height: 8rem;
+
+
+  .haven-card:has(> .card-footer) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-footer {
+    margin-top: auto;
   }
 
   .data-surface {
     border-radius: 1rem;
     overflow: hidden;
-    border: 1px solid #E8EDF0;
+    border: 1px solid #E8E2D7;
     background: #FFFFFF;
   }
 
   .data-surface table thead {
-    background: #F3FAFC;
-    border-bottom: 1px solid #E8EDF0;
+    background: #FAF8F3;
+    border-bottom: 1px solid #E8E2D7;
   }
 
   .data-surface table tbody tr {
@@ -241,12 +251,12 @@
   }
 
   .data-surface table tbody tr:hover {
-    background: #F7FBFE;
+    background: #FAF8F3;
   }
 
   .soft-control {
     background-color: #FFFFFF;
-    border: 1px solid #E8EDF0;
+    border: 1px solid #E8E2D7;
   }
 }
 

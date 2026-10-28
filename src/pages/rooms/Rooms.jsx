@@ -29,6 +29,7 @@ import {
   getRoomOccupied,
   getStudent,
   getTotals,
+  academicLine,
 } from "../../data/selectors.js";
 import { AllocateDialog } from "./AllocateDialog.jsx";
 
@@ -56,15 +57,15 @@ function RoomDetailDialog({ room, onClose, onAllocate, onMove, onVacate }) {
       wide
     >
       <div className="space-y-4">
-        <div className="rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3.5">
-          <div className="flex items-center justify-between text-xs font-semibold text-[#17191D] mb-1.5">
+        <div className="rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-3.5">
+          <div className="flex items-center justify-between text-xs font-semibold text-[#24221F] mb-1.5">
             <span>Occupancy Status</span>
             <span>{occupied} of {room.capacity} Beds Filled ({pct}%)</span>
           </div>
           <ProgressBar value={pct} label={`${occupied} of ${room.capacity} beds filled`} />
         </div>
 
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#696B70]">
+        <p className="text-[13px] font-medium text-[#6F6A62]">
           Current Occupants ({occupants.length})
         </p>
 
@@ -78,24 +79,24 @@ function RoomDetailDialog({ room, onClose, onAllocate, onMove, onVacate }) {
             {occupants.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center gap-3 rounded-xl border border-[#E8EDF0] bg-white p-3 transition-colors hover:border-[#087CC9]/40"
+                className="flex items-center gap-3 rounded-xl border border-[#E8E2D7] bg-white p-3 transition-colors hover:border-[#3E5BA9]/40"
               >
                 <Avatar name={s.name} size="sm" />
                 <div className="min-w-0 flex-1">
                   <Link
                     to={`/students/${s.id}`}
-                    className="block truncate text-sm font-semibold text-[#17191D] hover:text-[#087CC9] hover:underline"
+                    className="block truncate text-sm font-semibold text-[#24221F] hover:text-[#3E5BA9] hover:underline"
                   >
                     {s.name}
                   </Link>
-                  <p className="text-xs text-[#696B70]">Bed {s.bed} · {s.course}</p>
+                  <p className="text-xs text-[#6F6A62]">Bed {s.bed} · {s.course || "Profile pending"}</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => onMove(s)}
                     aria-label={`Reassign ${s.name}`}
                     title="Reassign to another room"
-                    className="rounded-lg p-2 text-[#696B70] transition-colors hover:bg-[#E6F3FC] hover:text-[#087CC9]"
+                    className="rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#ECEFF8] hover:text-[#3E5BA9]"
                   >
                     <ArrowRightLeft className="size-4" aria-hidden="true" />
                   </button>
@@ -103,7 +104,7 @@ function RoomDetailDialog({ room, onClose, onAllocate, onMove, onVacate }) {
                     onClick={() => onVacate(s)}
                     aria-label={`Vacate bed for ${s.name}`}
                     title="Vacate bed"
-                    className="rounded-lg p-2 text-[#696B70] transition-colors hover:bg-[#FDE8E8] hover:text-[#B43B3B]"
+                    className="rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#FBEAE6] hover:text-[#B5483B]"
                   >
                     <LogOut className="size-4" aria-hidden="true" />
                   </button>
@@ -171,7 +172,7 @@ function AdminRooms() {
         <CardBody className="flex flex-wrap items-end gap-3.5">
           <Field label="Search by Room Number" className="min-w-48 flex-1">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#696B70]" aria-hidden="true" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[#6F6A62]" aria-hidden="true" />
               <TextInput
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -182,20 +183,20 @@ function AdminRooms() {
             </div>
           </Field>
           <div>
-            <p className="text-[11px] font-bold tracking-[0.08em] text-[#17191D] uppercase mb-1.5">
+            <p className="text-[13px] font-medium text-[#24221F] mb-1.5">
               Filter by Block
             </p>
-            <div className="inline-flex rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-1" role="group" aria-label="Block filter">
+            <div className="inline-flex rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-1" role="group" aria-label="Block filter">
               {["all", "A", "B", "C", "D"].map((b) => (
                 <button
                   key={b}
                   type="button"
                   onClick={() => setBlock(b)}
                   aria-pressed={block === b}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                     block === b
-                      ? "bg-[#087CC9] text-white shadow-xs"
-                      : "text-[#696B70] hover:text-[#0866A8] hover:bg-white/60"
+                      ? "bg-[#3E5BA9] text-white shadow-xs"
+                      : "text-[#6F6A62] hover:text-[#2F4785] hover:bg-white/60"
                   }`}
                 >
                   {b === "all" ? "All Blocks" : `Block ${b}`}
@@ -206,7 +207,7 @@ function AdminRooms() {
         </CardBody>
       </Card>
 
-      <p className="text-xs text-[#696B70] mb-3 px-1" role="status">
+      <p className="text-xs text-[#6F6A62] mb-3 px-1" role="status">
         Showing <strong>{rooms.length}</strong> rooms{block !== "all" ? ` in Block ${block}` : " across all blocks"}
       </p>
 
@@ -224,27 +225,27 @@ function AdminRooms() {
                 <CardBody className="p-5">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3">
-                      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#E6F3FC] text-[#087CC9] transition-transform duration-200 group-hover:scale-105" aria-hidden="true">
+                      <span className="inline-flex size-10 items-center justify-center rounded-xl bg-[#ECEFF8] text-[#3E5BA9] transition-transform duration-200" aria-hidden="true">
                         <BedDouble className="size-5" />
                       </span>
                       <div>
-                        <p className="font-display text-lg font-bold text-[#17191D] group-hover:text-[#087CC9] transition-colors">{r.id}</p>
-                        <p className="text-xs text-[#696B70]">Block {r.block} · Floor {r.floor}</p>
+                        <p className="font-display text-lg font-semibold text-[#24221F] group-hover:text-[#3E5BA9] transition-colors">{r.id}</p>
+                        <p className="text-xs text-[#6F6A62]">Block {r.block} · Floor {r.floor}</p>
                       </div>
                     </div>
                     <RoomStatusBadge room={r} />
                   </div>
 
                   <div className="mt-4 space-y-1">
-                    <div className="flex justify-between text-xs text-[#696B70]">
+                    <div className="flex justify-between text-xs text-[#6F6A62]">
                       <span>{occupied} of {r.capacity} beds filled</span>
                       <span>{pct}%</span>
                     </div>
                     <ProgressBar value={pct} label={`${occupied} of ${r.capacity} beds`} />
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between pt-3 border-t border-[#E8EDF0]">
-                    <span className="flex items-center gap-1.5 text-xs text-[#696B70]">
+                  <div className="mt-4 flex items-center justify-between pt-3 border-t border-[#E8E2D7]">
+                    <span className="flex items-center gap-1.5 text-xs text-[#6F6A62]">
                       <Users className="size-3.5" aria-hidden="true" />
                       {occupied === 0 ? "Vacant" : `${occupied} resident${occupied > 1 ? "s" : ""}`}
                     </span>
@@ -294,7 +295,7 @@ function AdminRooms() {
           </>
         }
       >
-        <p className="text-sm text-[#696B70]">The bed will immediately become available in the inventory pool for reassignment.</p>
+        <p className="text-sm text-[#6F6A62]">The bed will immediately become available in the inventory pool for reassignment.</p>
       </Dialog>
     </>
   );
@@ -328,15 +329,15 @@ function StudentRooms() {
             <CardBody>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-display text-4xl font-bold tracking-tight text-[#0866A8]">{room.id}</p>
-                  <p className="mt-1 text-xs sm:text-sm text-[#696B70]">
+                  <p className="font-display text-4xl font-semibold tracking-tight text-[#2F4785]">{room.id}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-[#6F6A62]">
                     Block {room.block} · Floor {room.floor} · <strong>Bed {student.bed}</strong> is yours
                   </p>
                 </div>
                 <Badge tone="ok" dot>Allotted</Badge>
               </div>
               <div className="mt-5 space-y-1">
-                <div className="flex justify-between text-xs text-[#696B70]">
+                <div className="flex justify-between text-xs text-[#6F6A62]">
                   <span>Capacity</span>
                   <span>{getRoomOccupied(room)} of {room.capacity} beds filled</span>
                 </div>
@@ -356,15 +357,15 @@ function StudentRooms() {
             />
             <CardBody>
               {roommates.length === 0 ? (
-                <p className="py-6 text-center text-sm text-[#696B70]">You currently have the room to yourself.</p>
+                <p className="py-6 text-center text-sm text-[#6F6A62]">You currently have the room to yourself.</p>
               ) : (
                 <ul className="space-y-2.5">
                   {roommates.map((m) => (
-                    <li key={m.id} className="flex items-center gap-3 rounded-xl border border-[#E8EDF0] bg-[#F3FAFC] p-3 transition-colors hover:border-[#087CC9]/30 hover:bg-white">
+                    <li key={m.id} className="flex items-center gap-3 rounded-xl border border-[#E8E2D7] bg-[#F7F4EE] p-3 transition-colors hover:border-[#3E5BA9]/30 hover:bg-white">
                       <Avatar name={m.name} size="sm" />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#17191D]">{m.name}</p>
-                        <p className="text-xs text-[#696B70]">Bed {m.bed} · {m.course}, Year {m.year}</p>
+                        <p className="truncate text-sm font-semibold text-[#24221F]">{m.name}</p>
+                        <p className="text-xs text-[#6F6A62]">Bed {m.bed} · {academicLine(m)}</p>
                       </div>
                     </li>
                   ))}
@@ -380,12 +381,12 @@ function StudentRooms() {
                 <ol className="relative space-y-3.5">
                   {[...student.roomHistory].reverse().map((h, i) => (
                     <li key={i} className="flex gap-3 text-xs items-start">
-                      <span className="mt-1 size-2 shrink-0 rounded-full bg-[#087CC9]" aria-hidden="true" />
+                      <span className="mt-1 size-2 shrink-0 rounded-full bg-[#3E5BA9]" aria-hidden="true" />
                       <div>
-                        <p className="font-semibold text-[#17191D]">
-                          {h.roomId} <span className="font-normal text-[#696B70]">· Bed {h.bed}</span>
+                        <p className="font-semibold text-[#24221F]">
+                          {h.roomId} <span className="font-normal text-[#6F6A62]">· Bed {h.bed}</span>
                         </p>
-                        <p className="text-[11px] text-[#696B70]">
+                        <p className="text-[11px] text-[#6F6A62]">
                           {h.movedIn ? formatDateTime(h.movedIn) : "?"} → {h.movedOut ? formatDateTime(h.movedOut) : "Present"}
                         </p>
                       </div>

@@ -79,7 +79,7 @@ function AnnouncementForm({ onDone }) {
           </Select>
         </Field>
       </div>
-      <div className="flex justify-end gap-2.5 pt-2 border-t border-[#E8EDF0]">
+      <div className="flex justify-end gap-2.5 pt-2 border-t border-[#E8E2D7]">
         <Button type="button" variant="ghost" onClick={onDone}>Cancel</Button>
         <Button type="submit">Publish Notice</Button>
       </div>
@@ -131,7 +131,7 @@ export function Announcements() {
                 hoverable
                 className={
                   isUrgent
-                    ? "border-[#B43B3B]/40 bg-[#FEF4F4]/50 ring-1 ring-[#B43B3B]/20"
+                    ? "border-[#B5483B]/40 bg-[#FEF6F4]/50 ring-1 ring-[#B5483B]/20"
                     : undefined
                 }
               >
@@ -140,8 +140,8 @@ export function Announcements() {
                     <span
                       className={`inline-flex size-10 shrink-0 items-center justify-center rounded-xl ${
                         isUrgent
-                          ? "bg-[#FDE8E8] text-[#B43B3B] ring-1 ring-[#B43B3B]/25"
-                          : "bg-[#E6F3FC] text-[#087CC9] ring-1 ring-[#087CC9]/20"
+                          ? "bg-[#FBEAE6] text-[#B5483B] ring-1 ring-[#B5483B]/25"
+                          : "bg-[#ECEFF8] text-[#3E5BA9] ring-1 ring-[#3E5BA9]/20"
                       }`}
                       aria-hidden="true"
                     >
@@ -149,15 +149,15 @@ export function Announcements() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-display text-base sm:text-lg font-bold text-[#17191D]">
+                        <h3 className="font-display text-base sm:text-lg font-semibold text-[#24221F]">
                           {a.title}
                         </h3>
                         {isUrgent && <Badge tone="danger" dot>Urgent Notice</Badge>}
                       </div>
-                      <p className="mt-2 text-sm leading-relaxed text-[#383B40]">
+                      <p className="mt-2 text-sm leading-relaxed text-[#3B3732]">
                         {a.body}
                       </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[#696B70]">
+                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[#6F6A62]">
                         <Badge tone="sand">{a.category}</Badge>
                         {a.priority !== "urgent" && a.priority !== "normal" && (
                           <Badge tone={PRIORITY_TONE[a.priority] ?? "sand"}>{a.priority}</Badge>
@@ -171,7 +171,7 @@ export function Announcements() {
                         type="button"
                         onClick={() => setDeleting(a)}
                         aria-label={`Delete announcement: ${a.title}`}
-                        className="shrink-0 rounded-lg p-2 text-[#696B70] transition-colors hover:bg-[#FDE8E8] hover:text-[#B43B3B] cursor-pointer"
+                        className="shrink-0 rounded-lg p-2 text-[#6F6A62] transition-colors hover:bg-[#FBEAE6] hover:text-[#B5483B] cursor-pointer"
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
@@ -207,7 +207,7 @@ export function Announcements() {
           </>
         }
       >
-        <p className="text-sm text-[#696B70]">This notice will no longer be visible to residents or staff.</p>
+        <p className="text-sm text-[#6F6A62]">This notice will no longer be visible to residents or staff.</p>
       </Dialog>
     </Page>
   );

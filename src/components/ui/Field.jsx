@@ -19,10 +19,10 @@ export function Field({ label, required, hint, error, className, children }) {
   return (
     <FieldContext.Provider value={{ inputId, hintId, errorId, hasError: Boolean(error) }}>
       <div className={cn("flex flex-col gap-1.5", className)}>
-        <label htmlFor={inputId} className="text-[11px] font-bold tracking-[0.08em] text-[#17191D] uppercase">
+        <label htmlFor={inputId} className="text-[13px] font-medium text-[#24221F]">
           {label}
           {required && (
-            <span className="ml-1 text-[#B43B3B]" aria-hidden="true">
+            <span className="ml-1 text-[#B5483B]" aria-hidden="true">
               *
             </span>
           )}
@@ -30,12 +30,12 @@ export function Field({ label, required, hint, error, className, children }) {
         </label>
         {children}
         {hint && !error && (
-          <p id={hintId} className="text-xs text-[#696B70]">
+          <p id={hintId} className="text-xs text-[#6F6A62]">
             {hint}
           </p>
         )}
         {error && (
-          <p id={errorId} role="alert" className="text-xs font-semibold text-[#B43B3B]">
+          <p id={errorId} role="alert" className="text-xs font-semibold text-[#B5483B]">
             {error}
           </p>
         )}
@@ -59,12 +59,12 @@ function describedBy(ctx, hint) {
 
 const inputClasses = (hasError) =>
   cn(
-    "h-10.5 w-full rounded-xl border bg-white px-3.5 text-sm text-[#17191D] transition-all duration-150 outline-none",
-    "placeholder:text-[#696B70]/60",
+    "h-10 w-full rounded-lg border bg-white px-3.5 text-sm text-[#24221F] transition-colors duration-150 outline-none",
+    "placeholder:text-[#6F6A62]/60",
     hasError
-      ? "border-[#B43B3B] focus:border-[#B43B3B] focus:ring-3 focus:ring-[#B43B3B]/15"
-      : "border-[#E8EDF0] hover:border-[#087CC9]/40 focus:border-[#087CC9] focus:ring-3 focus:ring-[#087CC9]/15",
-    "disabled:cursor-not-allowed disabled:bg-[#F3FAFC] disabled:text-[#696B70]/60",
+      ? "border-[#B5483B] focus:border-[#B5483B] focus:ring-3 focus:ring-[#B5483B]/15"
+      : "border-[#E8E2D7] hover:border-[#DCD4C6] focus:border-[#3E5BA9] focus:ring-3 focus:ring-[#3E5BA9]/15",
+    "disabled:cursor-not-allowed disabled:bg-[#F7F4EE] disabled:text-[#6F6A62]/60",
   );
 
 export const TextInput = forwardRef(function TextInput({ hint, className, id, ...rest }, ref) {
@@ -111,7 +111,7 @@ export const Select = forwardRef(function Select({ hint, className, id, children
         {children}
       </select>
       <ChevronDown
-        className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-[#696B70]"
+        className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-[#6F6A62]"
         aria-hidden="true"
       />
     </div>
